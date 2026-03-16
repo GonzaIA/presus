@@ -16,12 +16,13 @@ interface InputProps {
 export const Input: React.FC<InputProps> = ({ label, error, className, asTextarea, rows = 2, ...props }) => {
   const baseClasses = `
     w-full px-4 py-3
-    bg-slate-50 dark:bg-slate-950
-    border border-slate-200 dark:border-slate-800
-    rounded-xl
+    bg-white dark:bg-slate-900
+    border border-slate-200 dark:border-slate-700
+    rounded-lg
     text-slate-900 dark:text-slate-100 placeholder-slate-400
-    focus:border-primary focus:ring-2 focus:ring-primary/20
-    outline-none transition-all text-sm
+    focus:border-primary focus:ring-2 focus:ring-primary/10
+    outline-none transition-all duration-200 text-base
+    shadow-sm hover:shadow-md
   `;
 
   if (asTextarea) {

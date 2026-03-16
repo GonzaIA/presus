@@ -51,7 +51,7 @@ export const AppLayout: React.FC = () => {
       {/* Header con Título y Stepper */}
       <header className="pt-6 px-4 pb-2 sticky top-0 bg-background-light/80 backdrop-blur-md z-10">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">
+          <h2 className="text-primary dark:text-white text-2xl font-bold leading-tight tracking-tight flex-1 text-center pr-10" style={{ fontFamily: 'var(--font-display)' }}>
             {stepTitles[currentStep as keyof typeof stepTitles]}
           </h2>
         </div>

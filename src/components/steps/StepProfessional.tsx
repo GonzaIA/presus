@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
-import defaultLogo from '../../assets/Isologo.svg';
 import { Camera } from 'lucide-react';
 
 export const StepProfessional: React.FC = () => {
@@ -27,10 +26,11 @@ export const StepProfessional: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Área de Logo */}
-      <Card className="flex flex-col items-center py-6">
+      <Card className="flex flex-col items-center py-8 bg-gradient-to-b from-white to-slate-50">
         <div
-          className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 overflow-hidden border-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:border-primary transition-colors relative group"
+          className="w-24 h-24 rounded-full bg-white flex items-center justify-center mb-4 overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-primary hover:shadow-lg transition-all duration-300 relative group"
           onClick={triggerFileInput}
+          style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
         >
           {profesional.logo ? (
             <img
@@ -39,14 +39,14 @@ export const StepProfessional: React.FC = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <img
-              src={defaultLogo}
-              alt="Default Logo"
-              className="w-10 h-10 opacity-50"
-            />
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-primary font-bold text-lg" style={{ fontFamily: 'var(--font-display)' }}>
+                {profesional.nombre ? profesional.nombre.charAt(0).toUpperCase() : 'P'}
+              </span>
+            </div>
           )}
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Camera className="text-white" size={20} />
+          <div className="absolute inset-0 bg-primary/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+            <Camera className="text-white" size={24} />
           </div>
         </div>
         <input
@@ -58,7 +58,7 @@ export const StepProfessional: React.FC = () => {
         />
         <button
           onClick={triggerFileInput}
-          className="text-xs font-medium text-primary hover:underline"
+          className="text-sm font-medium text-primary hover:text-accent transition-colors"
         >
           Cambiar Logo
         </button>
