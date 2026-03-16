@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
 import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
 
 export const StepPreview: React.FC = () => {
   const { profesional, cliente, items, config, goToStep, saveQuote } = useQuoteStore();
-  const [showShareOptions, setShowShareOptions] = React.useState(false);
-  const [isGenerating, setIsGenerating] = React.useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const documentRef = React.useRef<HTMLDivElement>(null);
 
   const calcularTotal = () => {
@@ -17,6 +16,7 @@ export const StepPreview: React.FC = () => {
 
   const { subtotal, iva, total } = calcularTotal();
   const enabledConditions = config.condiciones.filter(c => c.enabled);
+  const customConditions = config.condicionesCustom.split('\n').filter(l => l.trim());
 
   const handleSaveQuote = () => {
     saveQuote();
@@ -32,7 +32,7 @@ export const StepPreview: React.FC = () => {
       const element = documentRef.current;
       
       const opt = {
-        margin: [10, 10, 10, 10] as [number, number, number, number],
+        margin: 5,
         filename: `presupuesto-${cliente.nombre || 'cliente'}-${Date.now()}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
@@ -42,226 +42,214 @@ export const StepPreview: React.FC = () => {
       await html2pdf().set(opt).from(element).save();
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Error al generar PDF. Intenta de nuevo.');
+      alert('Error al generar PDF');
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const getWhatsAppMessage = () => {
+  const handleWhatsApp = (type: 'text' | 'pdf') => {
     const condiciones = [
       ...enabledConditions.map(c => c.label),
-      ...config.condicionesCustom.split('\n').filter(l => l.trim())
+      ...customConditions
     ];
     
     let mensaje = `*PRESUPUESTO*
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━
 
 *Cliente:* ${cliente.nombre || 'Sin nombre'}
 ${cliente.empresa ? `*Empresa:* ${cliente.empresa}` : ''}
-${cliente.telefono ? `*Teléfono:* ${cliente.telefono}` : ''}
+${cliente.telefono ? `*Tel:* ${cliente.telefono}` : ''}
 ${cliente.proyecto ? `*Proyecto:* ${cliente.proyecto}` : ''}
 
-*Detalle:*
-${items.map((item) => `• ${item.titulo}: $${item.precio.toFixed(2)}`).join('\n')}
+*Items:*
+${items.map(item => `• ${item.titulo}: $${item.precio.toFixed(2)}`).join('\n')}
 
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━
 *Subtotal:* $${subtotal.toFixed(2)}
 ${config.ivaEnabled ? `*IVA (${config.iva}%):* $${iva.toFixed(2)}` : ''}
 *TOTAL:* $${total.toFixed(2)}
-━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━
 
-${condiciones.length > 0 ? `*Condiciones:*\n${condiciones.map(c => `• ${c}`).join('\n')}\n\n` : ''}*Válido por ${config.validez} días*
+${condiciones.length > 0 ? `*Condiciones:*\n${condiciones.map(c => `• ${c}`).join('\n')}\n\n` : ''}*Válido ${config.validez} días*
 
-${profesional.nombre || 'Tu Nombre'}
-${profesional.contacto || ''}
-${profesional.alias ? `Alias transferencia: ${profesional.alias}` : ''}`;
+${profesional.nombre}
+${profesional.contacto}
+${profesional.alias ? `Alias: ${profesional.alias}` : ''}`;
 
-    return encodeURIComponent(mensaje);
-  };
-
-  const handleWhatsApp = (type: 'text' | 'pdf') => {
     const phone = cliente.telefono?.replace(/\D/g, '') || '';
+    const encoded = encodeURIComponent(mensaje);
     
     if (type === 'text') {
-      window.open(`https://wa.me/${phone}?text=${getWhatsAppMessage()}`, '_blank');
+      window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
     } else {
       handleDownloadPDF().then(() => {
-        window.open(`https://wa.me/${phone}?text=${getWhatsAppMessage()}`, '_blank');
+        setTimeout(() => {
+          window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+        }, 1000);
       });
     }
     setShowShareOptions(false);
   };
 
+  const handleEdit = () => {
+    goToStep(1);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="lg:grid lg:grid-cols-3 lg:gap-6">
-        {/* Preview */}
-        <div className="lg:col-span-2">
-          <Card>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-sm text-slate-500">
-                <span className="material-symbols-outlined text-success">check_circle</span>
-                Vista previa
-              </div>
-              <span className="text-xs text-slate-400">{items.length} items</span>
-            </div>
+    <div className="space-y-4">
+      {/* Actions Bar */}
+      <div className="flex flex-wrap gap-2 justify-between items-center">
+        <div className="flex gap-2">
+          <Button variant="primary" onClick={handleSaveQuote} className="h-10 text-sm">
+            <span className="material-symbols-outlined text-lg">save</span>
+            Guardar
+          </Button>
+        </div>
+        
+        <div className="flex gap-2">
+          <div className="relative">
+            <Button variant="whatsapp" onClick={() => setShowShareOptions(!showShareOptions)} className="h-10 text-sm">
+              <span className="material-symbols-outlined text-lg">send</span>
+              WhatsApp
+            </Button>
             
-            {/* Document - A4 */}
-            <div ref={documentRef} className="bg-white border border-slate-200 rounded-lg p-4 md:p-6 overflow-auto" style={{ minHeight: 297 }}>
-              {/* Header */}
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex items-center gap-3">
-                  {profesional.logo ? (
-                    <img src={profesional.logo} alt="Logo" className="w-10 h-10 object-contain" />
-                  ) : (
-                    <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                      <span className="material-symbols-outlined text-white text-lg">bolt</span>
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-sm">{profesional.nombre || 'Tu Nombre'}</h3>
-                    <p className="text-xs text-slate-500">{profesional.profesion}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-block px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded">PRESUPUESTO</span>
-                  <p className="text-[10px] text-slate-400 mt-1">SQ-{Date.now().toString().slice(-6)}</p>
-                </div>
+            {showShareOptions && (
+              <div className="absolute top-full right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-20">
+                <button onClick={() => handleWhatsApp('text')} className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2 text-sm">
+                  <span className="material-symbols-outlined text-green-500 text-lg">chat</span>
+                  Solo texto
+                </button>
+                <button onClick={() => handleWhatsApp('pdf')} className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2 text-sm">
+                  <span className="material-symbols-outlined text-red-500 text-lg">picture_as_pdf</span>
+                  Con PDF
+                </button>
               </div>
+            )}
+          </div>
 
-              {/* Client */}
-              <div className="mb-4 p-3 bg-slate-50 rounded-lg">
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Cliente</p>
-                <p className="font-semibold text-slate-900 text-sm">{cliente.nombre || 'Sin nombre'}</p>
-                {cliente.empresa && <p className="text-xs text-slate-600">{cliente.empresa}</p>}
-                {cliente.telefono && <p className="text-xs text-slate-500">{cliente.telefono}</p>}
-                {cliente.proyecto && <p className="text-xs text-primary mt-1"><strong>Proyecto:</strong> {cliente.proyecto}</p>}
-              </div>
+          <Button variant="secondary" onClick={handleDownloadPDF} disabled={isGenerating} className="h-10 text-sm">
+            <span className="material-symbols-outlined text-lg">download</span>
+            {isGenerating ? '...' : 'PDF'}
+          </Button>
 
-              {/* Items - Compact Table */}
-              <div className="mb-4">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-300">
-                      <th className="text-left py-1 font-semibold text-slate-700">Descripción</th>
-                      <th className="text-right py-1 font-semibold text-slate-700">Importe</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map(item => (
-                      <tr key={item.id} className="border-b border-slate-100">
-                        <td className="py-1.5 pr-2">
-                          <p className="font-medium text-slate-900">{item.titulo}</p>
-                          {item.descripcion && <p className="text-[10px] text-slate-500">{item.descripcion}</p>}
-                        </td>
-                        <td className="text-right py-1.5 font-medium text-slate-900">${item.precio.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <Button variant="ghost" onClick={handleEdit} className="h-10 text-sm">
+            <span className="material-symbols-outlined text-lg">edit</span>
+          </Button>
+        </div>
+      </div>
 
-              {/* Totals */}
-              <div className="mb-4">
-                <div className="flex justify-end">
-                  <div className="w-40">
-                    <div className="flex justify-between py-1 text-xs">
-                      <span className="text-slate-500">Subtotal</span>
-                      <span className="font-medium">${subtotal.toFixed(2)}</span>
-                    </div>
-                    {config.ivaEnabled && (
-                      <div className="flex justify-between py-1 text-xs">
-                        <span className="text-slate-500">IVA ({config.iva}%)</span>
-                        <span className="font-medium">${iva.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between py-1.5 px-2 bg-slate-900 -mx-2 text-white rounded">
-                      <span className="font-bold text-xs">TOTAL</span>
-                      <span className="font-bold">${total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Conditions Footer */}
-              {(enabledConditions.length > 0 || config.condicionesCustom) && (
-                <div className="pt-3 border-t border-slate-200 text-xs">
-                  <p className="font-semibold text-slate-500 mb-1">Condiciones:</p>
-                  <ul className="text-slate-600 space-y-0.5">
-                    {enabledConditions.map(condition => (
-                      <li key={condition.id}>• {condition.label}</li>
-                    ))}
-                    {config.condicionesCustom.split('\n').filter(l => l.trim()).map((line, idx) => (
-                      <li key={idx}>{line}</li>
-                    ))}
-                  </ul>
-                  <p className="text-slate-400 mt-2">Válido por {config.validez} días</p>
+      {/* Document Preview */}
+      <div className="overflow-auto bg-slate-100 rounded-xl p-4">
+        <div 
+          ref={documentRef}
+          className="bg-white mx-auto"
+          style={{ 
+            width: '210mm', 
+            minHeight: '297mm', 
+            padding: '15mm',
+            fontSize: '10pt',
+            lineHeight: 1.3
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15mm' }}>
+            <div>
+              {profesional.logo ? (
+                <img src={profesional.logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', marginBottom: '5px' }} />
+              ) : (
+                <div style={{ width: '40px', height: '40px', backgroundColor: '#2563eb', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
+                  <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '20px' }}>bolt</span>
                 </div>
               )}
+              <p style={{ fontWeight: 'bold', fontSize: '12pt', color: '#1e293b' }}>{profesional.nombre || 'Tu Nombre'}</p>
+              <p style={{ fontSize: '9pt', color: '#64748b' }}>{profesional.profesion}</p>
+              {profesional.contacto && <p style={{ fontSize: '8pt', color: '#94a3b8', marginTop: '2px' }}>{profesional.contacto}</p>}
+              {profesional.alias && <p style={{ fontSize: '8pt', color: '#2563eb', marginTop: '2px' }}>Alias: {profesional.alias}</p>}
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ display: 'inline-block', padding: '3px 8px', backgroundColor: '#1e293b', color: 'white', fontSize: '8pt', fontWeight: 'bold', borderRadius: '4px' }}>PRESUPUESTO</span>
+              <p style={{ fontSize: '8pt', color: '#94a3b8', marginTop: '5px' }}>SQ-{Date.now().toString().slice(-6)}</p>
+            </div>
+          </div>
 
-              {/* Professional Footer */}
-              <div className="pt-2 mt-2 border-t border-slate-100 text-center text-[10px] text-slate-400">
-                {profesional.alias && <p>Alias: {profesional.alias}</p>}
-                {profesional.matricula && <p>Mat: {profesional.matricula}</p>}
+          {/* Client Info */}
+          <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '8px', marginBottom: '15mm' }}>
+            <p style={{ fontSize: '7pt', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Cliente</p>
+            <p style={{ fontWeight: '600', fontSize: '11pt', color: '#1e293b' }}>{cliente.nombre || 'Sin nombre'}</p>
+            {cliente.empresa && <p style={{ fontSize: '9pt', color: '#475569' }}>{cliente.empresa}</p>}
+            {cliente.telefono && <p style={{ fontSize: '9pt', color: '#64748b' }}>{cliente.telefono}</p>}
+            {cliente.email && <p style={{ fontSize: '9pt', color: '#64748b' }}>{cliente.email}</p>}
+            {cliente.direccion && <p style={{ fontSize: '9pt', color: '#64748b' }}>{cliente.direccion}</p>}
+            {cliente.proyecto && (
+              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
+                <p style={{ fontSize: '7pt', color: '#94a3b8', textTransform: 'uppercase' }}>Proyecto</p>
+                <p style={{ fontSize: '10pt', color: '#2563eb', fontWeight: '500' }}>{cliente.proyecto}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Items Table */}
+          <table style={{ width: '100%', marginBottom: '15mm', fontSize: '9pt' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #1e293b' }}>
+                <th style={{ textAlign: 'left', padding: '5px 0', fontSize: '8pt', color: '#475569', textTransform: 'uppercase' }}>Descripción</th>
+                <th style={{ textAlign: 'right', padding: '5px 0', fontSize: '8pt', color: '#475569', textTransform: 'uppercase', width: '60mm' }}>Importe</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(item => (
+                <tr key={item.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <td style={{ padding: '6px 0' }}>
+                    <p style={{ fontWeight: '500', color: '#1e293b', fontSize: '9pt' }}>{item.titulo}</p>
+                    {item.descripcion && <p style={{ fontSize: '7pt', color: '#94a3b8', marginTop: '2px' }}>{item.descripcion}</p>}
+                  </td>
+                  <td style={{ textAlign: 'right', padding: '6px 0', fontWeight: '500', color: '#1e293b' }}>${item.precio.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Totals */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15mm' }}>
+            <div style={{ width: '55mm' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '9pt' }}>
+                <span style={{ color: '#64748b' }}>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              {config.ivaEnabled && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '9pt' }}>
+                  <span style={{ color: '#64748b' }}>IVA ({config.iva}%)</span>
+                  <span>${iva.toFixed(2)}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', backgroundColor: '#1e293b', color: 'white', borderRadius: '6px', marginTop: '4px' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '10pt' }}>TOTAL</span>
+                <span style={{ fontWeight: 'bold', fontSize: '12pt' }}>${total.toFixed(2)}</span>
               </div>
             </div>
-          </Card>
-        </div>
+          </div>
 
-        {/* Actions */}
-        <div className="lg:col-span-1 space-y-4">
-          <Card>
-            <h3 className="font-bold text-slate-900 mb-2">¡Listo!</h3>
-            <p className="text-sm text-slate-500 mb-4">Guarda y comparte tu presupuesto</p>
-            
-            <div className="space-y-3">
-              <Button variant="primary" fullWidth onClick={handleSaveQuote}>
-                <span className="material-symbols-outlined">save</span>
-                Guardar
-              </Button>
-              
-              <div className="relative">
-                <Button variant="whatsapp" fullWidth onClick={() => setShowShareOptions(!showShareOptions)}>
-                  <span className="material-symbols-outlined">send</span>
-                  Enviar WhatsApp
-                </Button>
-                
-                {showShareOptions && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-10">
-                    <button onClick={() => handleWhatsApp('text')} className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3">
-                      <span className="material-symbols-outlined text-green-500">chat</span>
-                      <span className="text-sm">Solo texto</span>
-                    </button>
-                    <button onClick={() => handleWhatsApp('pdf')} className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3">
-                      <span className="material-symbols-outlined text-red-500">picture_as_pdf</span>
-                      <span className="text-sm">Con PDF</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <Button variant="secondary" fullWidth onClick={handleDownloadPDF} disabled={isGenerating}>
-                <span className="material-symbols-outlined">download</span>
-                {isGenerating ? 'Generando...' : 'Descargar PDF'}
-              </Button>
-              
-              <Button variant="ghost" fullWidth onClick={() => goToStep(1)}>
-                <span className="material-symbols-outlined">edit</span>
-                Editar
-              </Button>
+          {/* Conditions */}
+          {(enabledConditions.length > 0 || customConditions.length > 0) && (
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '10mm', marginBottom: '10mm' }}>
+              <p style={{ fontSize: '7pt', color: '#64748b', textTransform: 'uppercase', marginBottom: '5px', fontWeight: '600' }}>Condiciones</p>
+              <ul style={{ fontSize: '8pt', color: '#475569', paddingLeft: '12px', margin: 0 }}>
+                {enabledConditions.map(condition => (
+                  <li key={condition.id} style={{ marginBottom: '2px' }}>{condition.label}</li>
+                ))}
+                {customConditions.map((line, idx) => (
+                  <li key={idx}>{line}</li>
+                ))}
+              </ul>
+              <p style={{ fontSize: '8pt', color: '#94a3b8', marginTop: '8px' }}>Válido por {config.validez} días</p>
             </div>
-          </Card>
+          )}
 
-          <Card className="bg-blue-50 border-blue-100">
-            <div className="flex gap-3">
-              <span className="material-symbols-outlined text-primary">lightbulb</span>
-              <div>
-                <p className="font-medium text-slate-900 text-sm">Consejo</p>
-                <p className="text-xs text-slate-500 mt-1">El mensaje de WhatsApp incluye todas las condiciones.</p>
-              </div>
-            </div>
-          </Card>
+          {/* Professional Footer */}
+          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '8mm', textAlign: 'center' }}>
+            {profesional.matricula && <p style={{ fontSize: '8pt', color: '#94a3b8' }}>Matrícula: {profesional.matricula}</p>}
+          </div>
         </div>
       </div>
     </div>
