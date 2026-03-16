@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
 import { StepProfessional } from '../steps/StepProfessional';
 import { StepClient } from '../steps/StepClient';
@@ -6,12 +6,76 @@ import { StepItems } from '../steps/StepItems';
 import { StepNotes } from '../steps/StepNotes';
 import { StepPreview } from '../steps/StepPreview';
 import { SplashScreen } from '../steps/SplashScreen';
+import { Dashboard } from '../steps/Dashboard';
 
 export const AppLayout: React.FC = () => {
   const { currentStep, nextStep, prevStep } = useQuoteStore();
+  const [showDashboard, setShowDashboard] = useState(true);
 
   if (currentStep === 0) {
     return <SplashScreen />;
+  }
+
+  if (showDashboard && currentStep === 1) {
+    return (
+      <div className="min-h-screen bg-background flex">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex lg:w-64 flex-col bg-white border-r border-slate-200">
+          <div className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                <span className="material-symbols-outlined text-white text-xl">bolt</span>
+              </div>
+              <span className="text-xl font-bold text-slate-900 font-display">SwiftQuote</span>
+            </div>
+          </div>
+          
+          <nav className="flex-1 px-4 space-y-1">
+            {[
+              { label: 'Dashboard', icon: 'dashboard', active: true },
+              { label: 'Cotizaciones', icon: 'description' },
+              { label: 'Clientes', icon: 'group' },
+              { label: 'Estadísticas', icon: 'analytics' },
+              { label: 'Ajustes', icon: 'settings' },
+            ].map((item) => (
+              <a key={item.label} href="#" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${item.active ? 'bg-primary/10 text-primary' : 'text-slate-500 hover:bg-slate-100'}`}>
+                <span className="material-symbols-outlined">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </a>
+            ))}
+          </nav>
+
+          <div className="p-4">
+            <div className="bg-gradient-to-br from-primary to-accent p-4 rounded-2xl text-white">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined">diamond</span>
+                <span className="font-bold">Plan Pro</span>
+              </div>
+              <p className="text-xs text-white/80">Funciones ilimitadas</p>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-slate-200 bg-white">
+            <h1 className="text-lg font-bold text-slate-900 font-display">Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                <span className="material-symbols-outlined">notifications</span>
+              </button>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
+                G
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+            <Dashboard onNewQuote={() => setShowDashboard(false)} />
+          </main>
+        </div>
+      </div>
+    );
   }
 
   const renderStep = () => {
@@ -27,6 +91,14 @@ export const AppLayout: React.FC = () => {
 
   const stepTitles = ['', 'Tu Identidad', 'Datos Cliente', 'Cotización', 'Condiciones', 'Vista Previa'];
 
+  const handleBack = () => {
+    if (currentStep === 1) {
+      setShowDashboard(true);
+    } else {
+      prevStep();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
@@ -41,12 +113,22 @@ export const AppLayout: React.FC = () => {
         </div>
         
         <nav className="flex-1 px-4 space-y-1">
-          {['Dashboard', 'Cotizaciones', 'Clientes', 'Estadísticas', 'Ajustes'].map((item, i) => (
-            <a key={item} href="#" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${i === 1 ? 'bg-primary/10 text-primary' : 'text-slate-500 hover:bg-slate-100'}`}>
-              <span className="material-symbols-outlined">{i === 0 ? 'dashboard' : i === 1 ? 'description' : i === 2 ? 'group' : i === 3 ? 'analytics' : 'settings'}</span>
-              <span className="font-medium">{item}</span>
-            </a>
-          ))}
+          <button onClick={() => setShowDashboard(true)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-500 hover:bg-slate-100">
+            <span className="material-symbols-outlined">dashboard</span>
+            <span className="font-medium">Dashboard</span>
+          </button>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-500 hover:bg-slate-100">
+            <span className="material-symbols-outlined">description</span>
+            <span className="font-medium">Cotizaciones</span>
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-500 hover:bg-slate-100">
+            <span className="material-symbols-outlined">group</span>
+            <span className="font-medium">Clientes</span>
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-500 hover:bg-slate-100">
+            <span className="material-symbols-outlined">settings</span>
+            <span className="font-medium">Ajustes</span>
+          </a>
         </nav>
 
         <div className="p-4">
@@ -65,6 +147,9 @@ export const AppLayout: React.FC = () => {
         {/* Desktop Header */}
         <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-slate-200 bg-white">
           <div className="flex items-center gap-4">
+            <button onClick={handleBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900">
+              <span className="material-symbols-outlined">arrow_back</span>
+            </button>
             <h1 className="text-lg font-bold text-slate-900 font-display">{stepTitles[currentStep]}</h1>
             <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full">Paso {currentStep} de 5</span>
           </div>
@@ -83,7 +168,7 @@ export const AppLayout: React.FC = () => {
           {/* Mobile Header */}
           <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-4">
             <div className="flex items-center justify-between mb-4">
-              <button onClick={prevStep} disabled={currentStep === 1} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 disabled:opacity-50">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
                 <span className="material-symbols-outlined">arrow_back</span>
               </button>
               <h1 className="text-lg font-bold text-slate-900 font-display">{stepTitles[currentStep]}</h1>
@@ -91,7 +176,6 @@ export const AppLayout: React.FC = () => {
                 <span className="material-symbols-outlined">arrow_forward</span>
               </button>
             </div>
-            {/* Step indicator */}
             <div className="flex items-center justify-center gap-2">
               {[1, 2, 3, 4, 5].map(i => (
                 <div key={i} className={`h-1.5 rounded-full transition-all ${i === currentStep ? 'w-8 bg-primary' : i < currentStep ? 'w-2 bg-primary' : 'w-2 bg-slate-200'}`} />
@@ -121,7 +205,7 @@ export const AppLayout: React.FC = () => {
 
           {/* Desktop Footer */}
           <footer className="hidden lg:flex items-center justify-between p-6 border-t border-slate-200 bg-white">
-            <button onClick={prevStep} disabled={currentStep === 1} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handleBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900">
               <span className="material-symbols-outlined">arrow_back</span>
               <span>Atrás</span>
             </button>
@@ -140,16 +224,16 @@ export const AppLayout: React.FC = () => {
           {/* Mobile Bottom Nav */}
           <nav className="lg:hidden flex border-t border-slate-200 bg-white px-2 py-2">
             {[
-              { icon: 'home', label: 'Inicio' },
+              { icon: 'home', label: 'Inicio', action: () => setShowDashboard(true) },
               { icon: 'description', label: 'Cots' },
               { icon: 'add_circle', label: 'Nueva', active: true },
               { icon: 'group', label: 'Clientes' },
               { icon: 'settings', label: 'Ajustes' }
-            ].map(item => (
-              <a key={item.label} href="#" className={`flex-1 flex flex-col items-center gap-1 py-2 ${item.active ? 'text-primary' : 'text-slate-400'}`}>
+            ].map((item) => (
+              <button key={item.label} onClick={item.action} className={`flex-1 flex flex-col items-center gap-1 py-2 ${item.active ? 'text-primary' : 'text-slate-400'}`}>
                 <span className="material-symbols-outlined">{item.icon}</span>
                 <span className="text-[10px] font-medium">{item.label}</span>
-              </a>
+              </button>
             ))}
           </nav>
         </div>

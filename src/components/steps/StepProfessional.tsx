@@ -37,12 +37,23 @@ export const StepProfessional: React.FC = () => {
         <button onClick={triggerFileInput} className="text-sm font-medium text-primary">Cambiar Logo</button>
       </Card>
 
-      <div className="space-y-4">
-        <Input label="Nombre Completo" placeholder="Ej: Juan Pérez" value={profesional.nombre} onChange={e => setProfessional({ nombre: e.target.value })} />
-        <Input label="Profesión / Oficio" placeholder="Ej: Pintor, Electricista" value={profesional.profesion} onChange={e => setProfessional({ profesion: e.target.value })} />
-        <Input label="Teléfono de Contacto" placeholder="Ej: +34 600 000 000" type="tel" value={profesional.contacto} onChange={e => setProfessional({ contacto: e.target.value })} />
-        <Input label="Matrícula / NIF" placeholder="Opcional" value={profesional.matricula} onChange={e => setProfessional({ matricula: e.target.value })} />
-      </div>
+      <Card>
+        <h3 className="font-semibold text-slate-900 mb-4">Información Personal</h3>
+        <div className="space-y-4">
+          <Input label="Nombre Completo" placeholder="Ej: Juan Pérez" value={profesional.nombre} onChange={e => setProfessional({ nombre: e.target.value })} />
+          <Input label="Profesión / Oficio" placeholder="Ej: Pintor, Electricista" value={profesional.profesion} onChange={e => setProfessional({ profesion: e.target.value })} />
+          <Input label="Teléfono de Contacto" placeholder="Ej: +54 9 11 1234 5678" type="tel" value={profesional.contacto} onChange={e => setProfessional({ contacto: e.target.value })} />
+          <Input label="Matrícula / NIF (Opcional)" placeholder="Número de registro profesional" value={profesional.matricula} onChange={e => setProfessional({ matricula: e.target.value })} />
+        </div>
+      </Card>
+
+      <Card>
+        <h3 className="font-semibold text-slate-900 mb-4">Información de Pago</h3>
+        <div className="space-y-4">
+          <Input label="Alias para transferencias (Opcional)" placeholder="Ej: juan.perez.cbu o CVU" value={profesional.alias} onChange={e => setProfessional({ alias: e.target.value })} />
+          <p className="text-xs text-slate-500">Este alias se mostrará en el presupuesto para pagos mediante transferencia.</p>
+        </div>
+      </Card>
     </div>
   );
 };

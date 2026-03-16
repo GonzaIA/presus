@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { QuoteState, Professional, Client, Item, Config } from '../types';
+import type { QuoteState, Professional, Client, Item, Config, Quote, Condition } from '../types';
+
+const defaultConditions: Condition[] = [
+  { id: 'validity', label: 'Presupuesto válido por 7 días', enabled: true },
+  { id: 'materials', label: 'No incluye materiales', enabled: false },
+  { id: 'advance', label: 'Requiere anticipo del 50%', enabled: false },
+  { id: 'warranty', label: 'Garantía de 1 año', enabled: false },
+  { id: 'visit', label: 'Visita técnica sin costo', enabled: true },
+  { id: 'workstart', label: 'Inicio de obra após seña', enabled: false },
+];
 
 const initialState: Omit<QuoteState, 'currentStep'> = {
   profesional: {
@@ -9,20 +18,26 @@ const initialState: Omit<QuoteState, 'currentStep'> = {
     logo: '',
     contacto: '',
     matricula: '',
+    alias: '',
   },
   cliente: {
     nombre: '',
     direccion: '',
     proyecto: '',
+    telefono: '',
+    empresa: '',
+    email: '',
+    notas: '',
   },
-  items: [
-    { id: 1, titulo: '', descripcion: '', precio: 0 }
-  ],
+  items: [],
   config: {
     iva: 21,
+    ivaEnabled: true,
     validez: 7,
-    incluyeMateriales: false,
+    condiciones: defaultConditions,
+    condicionesCustom: '',
   },
+  quotes: [],
 };
 
 interface QuoteActions {
@@ -33,16 +48,22 @@ interface QuoteActions {
   removeItem: (id: number) => void;
   updateItem: (id: number, data: Partial<Item>) => void;
   setConfig: (data: Partial<Config>) => void;
+  updateCondition: (id: string, data: Partial<Condition>) => void;
   nextStep: () => void;
   prevStep: () => void;
   goToStep: (step: number) => void;
+  saveQuote: () => void;
+  deleteQuote: (id: string) => void;
+  loadQuote: (quote: Quote) => void;
+  resetQuote: () => void;
+  getTotal: () => number;
 }
 
 export const useQuoteStore = create<QuoteState & QuoteActions>()(
   persist(
     (set, get) => ({
       ...initialState,
-      currentStep: 0, // 0: Splash, 1: Identidad, etc.
+      currentStep: 0,
 
       setProfessional: (data) =>
         set((state) => ({
@@ -83,6 +104,18 @@ export const useQuoteStore = create<QuoteState & QuoteActions>()(
           config: { ...state.config, ...data },
         })),
 
+      updateCondition: (id, data) => {
+        const { config } = get();
+        set({
+          config: {
+            ...config,
+            condiciones: config.condiciones.map(c =>
+              c.id === id ? { ...c, ...data } : c
+            ),
+          },
+        });
+      },
+
       nextStep: () => {
         const { currentStep } = get();
         if (currentStep < 5) set({ currentStep: currentStep + 1 });
@@ -94,6 +127,53 @@ export const useQuoteStore = create<QuoteState & QuoteActions>()(
       },
 
       goToStep: (step) => set({ currentStep: step }),
+
+      getTotal: () => {
+        const { items, config } = get();
+        const subtotal = items.reduce((sum, item) => sum + item.precio, 0);
+        const iva = config.ivaEnabled ? subtotal * (config.iva / 100) : 0;
+        return subtotal + iva;
+      },
+
+      saveQuote: () => {
+        const { profesional, cliente, items, config, quotes, getTotal } = get();
+        const quote: Quote = {
+          id: Date.now().toString(),
+          profesional: { ...profesional },
+          cliente: { ...cliente },
+          items: [...items],
+          config: { ...config },
+          total: getTotal(),
+          createdAt: new Date().toISOString(),
+          status: 'pending',
+        };
+        set({ quotes: [...quotes, quote] });
+      },
+
+      deleteQuote: (id) => {
+        const { quotes } = get();
+        set({ quotes: quotes.filter(q => q.id !== id) });
+      },
+
+      loadQuote: (quote) => {
+        set({
+          profesional: quote.profesional,
+          cliente: quote.cliente,
+          items: quote.items,
+          config: quote.config,
+          currentStep: 1,
+        });
+      },
+
+      resetQuote: () => {
+        set({
+          profesional: initialState.profesional,
+          cliente: initialState.cliente,
+          items: [],
+          config: initialState.config,
+          currentStep: 1,
+        });
+      },
     }),
     {
       name: 'swiftquote-storage',

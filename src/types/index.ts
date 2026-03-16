@@ -1,15 +1,20 @@
 export interface Professional {
   nombre: string;
   profesion: string;
-  logo: string; // base64
+  logo: string;
   contacto: string;
   matricula: string;
+  alias: string; // Nombre comercial alternativo para transacciones
 }
 
 export interface Client {
   nombre: string;
   direccion: string;
   proyecto: string;
+  telefono: string;
+  empresa: string;
+  email: string;
+  notas: string;
 }
 
 export interface Item {
@@ -19,10 +24,30 @@ export interface Item {
   precio: number;
 }
 
+export interface Condition {
+  id: string;
+  label: string;
+  enabled: boolean;
+  customText?: string;
+}
+
 export interface Config {
   iva: number;
+  ivaEnabled: boolean;
   validez: number;
-  incluyeMateriales: boolean;
+  condiciones: Condition[];
+  condicionesCustom: string;
+}
+
+export interface Quote {
+  id: string;
+  profesional: Professional;
+  cliente: Client;
+  items: Item[];
+  config: Config;
+  total: number;
+  createdAt: string;
+  status: 'draft' | 'pending' | 'approved' | 'rejected';
 }
 
 export interface QuoteState {
@@ -31,4 +56,5 @@ export interface QuoteState {
   items: Item[];
   config: Config;
   currentStep: number;
+  quotes: Quote[];
 }

@@ -1,23 +1,83 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 
 export const StepPreview: React.FC = () => {
-  const { profesional, cliente, items, config, goToStep } = useQuoteStore();
-  
+  const { profesional, cliente, items, config, goToStep, saveQuote } = useQuoteStore();
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const documentRef = useRef<HTMLDivElement>(null);
+
   const calcularTotal = () => {
     const subtotal = items.reduce((sum, item) => sum + item.precio, 0);
-    const iva = subtotal * (config.iva / 100);
+    const iva = config.ivaEnabled ? subtotal * (config.iva / 100) : 0;
     return { subtotal, iva, total: subtotal + iva };
   };
 
   const { subtotal, iva, total } = calcularTotal();
+  const enabledConditions = config.condiciones.filter(c => c.enabled);
 
-  const handleWhatsApp = () => {
-    const mensaje = `Hola ${cliente.nombre || 'Cliente'},\n\nPresupuesto para: "${cliente.proyecto || 'Sin título'}".\n\nTotal: $${total.toFixed(2)}\n\nSaludos,\n${profesional.nombre || 'Tu Nombre'}`;
+  const handleSaveQuote = () => {
+    saveQuote();
+    alert('Presupuesto guardado correctamente');
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!documentRef.current) return;
+    setIsGenerating(true);
+    
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+      const element = documentRef.current;
+      
+      const opt = {
+        margin: 10,
+        filename: `presupuesto-${cliente.nombre || 'cliente'}-${Date.now()}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+      };
+      
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error al generar PDF');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleWhatsApp = (type: 'text' | 'image' | 'pdf') => {
+    const mensaje = `*PRESUPUESTO*
+
+*Cliente:* ${cliente.nombre || 'Sin nombre'}
+*Proyecto:* ${cliente.proyecto || 'Sin título'}
+
+*Items:*
+${items.map((item, i) => `${i + 1}. ${item.titulo} - $${item.precio.toFixed(2)}`).join('\n')}
+
+*Subtotal:* $${subtotal.toFixed(2)}
+${config.ivaEnabled ? `*IVA (${config.iva}%):* $${iva.toFixed(2)}` : ''}
+*TOTAL:* $${total.toFixed(2)}
+
+---
+${profesional.nombre || 'Tu Nombre'}
+${profesional.contacto || ''}
+${profesional.alias ? `\nAlias para transferencia: ${profesional.alias}` : ''}`;
+
     const encodedMessage = encodeURIComponent(mensaje);
-    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+    
+    if (type === 'text') {
+      window.open(`https://wa.me/${cliente.telefono?.replace(/\D/g, '') || ''}?text=${encodedMessage}`, '_blank');
+    } else if (type === 'image') {
+      alert('Generando imagen... (funcionalidad en desarrollo)');
+    } else {
+      handleDownloadPDF().then(() => {
+        window.open(`https://wa.me/${cliente.telefono?.replace(/\D/g, '') || ''}?text=${encodedMessage}`, '_blank');
+      });
+    }
+    setShowShareOptions(false);
   };
 
   return (
@@ -26,67 +86,120 @@ export const StepPreview: React.FC = () => {
         {/* Preview */}
         <div className="lg:col-span-2">
           <Card>
-            <div className="flex items-center gap-2 mb-4 text-sm text-slate-500">
-              <span className="material-symbols-outlined text-success">check_circle</span>
-              Vista previa
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <span className="material-symbols-outlined text-success">check_circle</span>
+                Vista previa
+              </div>
+              <span className="text-xs text-slate-400">{items.length} items</span>
             </div>
             
-            {/* Document */}
-            <div className="bg-white border border-slate-200 rounded-lg p-6" style={{ aspectRatio: '1/1.414' }}>
+            {/* Document - A4 */}
+            <div ref={documentRef} className="bg-white border border-slate-200 rounded-lg p-8" style={{ minHeight: 297, aspectRatio: '1/1.414' }}>
               {/* Header */}
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start mb-8">
                 <div>
                   {profesional.logo ? (
-                    <img src={profesional.logo} alt="Logo" className="w-12 h-12 object-contain mb-2" />
+                    <img src={profesional.logo} alt="Logo" className="w-16 h-16 object-contain mb-3" />
                   ) : (
-                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-2">
-                      <span className="material-symbols-outlined text-white text-xl">bolt</span>
+                    <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center mb-3">
+                      <span className="material-symbols-outlined text-white text-2xl">bolt</span>
                     </div>
                   )}
-                  <h3 className="font-bold text-slate-900">{profesional.nombre || 'Tu Nombre'}</h3>
-                  <p className="text-xs text-slate-500">{profesional.profesion}</p>
+                  <h3 className="font-bold text-slate-900 text-lg">{profesional.nombre || 'Tu Nombre'}</h3>
+                  <p className="text-sm text-slate-500">{profesional.profesion}</p>
+                  {profesional.contacto && <p className="text-xs text-slate-400 mt-1">{profesional.contacto}</p>}
+                  {profesional.alias && <p className="text-xs text-primary mt-1">Alias: {profesional.alias}</p>}
                 </div>
                 <div className="text-right">
-                  <span className="inline-block px-3 py-1 bg-slate-900 text-white text-xs font-bold rounded-full">PRESUPUESTO</span>
-                  <p className="text-xs text-slate-400 mt-1">SQ-{Date.now().toString().slice(-6)}</p>
+                  <span className="inline-block px-4 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-full">PRESUPUESTO</span>
+                  <p className="text-xs text-slate-400 mt-2">SQ-{Date.now().toString().slice(-6)}</p>
                 </div>
               </div>
 
               {/* Client */}
-              <div className="mb-6 p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Cliente</p>
-                <p className="font-medium text-slate-900">{cliente.nombre || 'Sin nombre'}</p>
-                {cliente.proyecto && <p className="text-sm text-slate-500">{cliente.proyecto}</p>}
+              <div className="mb-8 p-4 bg-slate-50 rounded-xl">
+                <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Cliente</p>
+                <p className="font-semibold text-slate-900">{cliente.nombre || 'Sin nombre'}</p>
+                {cliente.empresa && <p className="text-sm text-slate-600">{cliente.empresa}</p>}
+                {cliente.telefono && <p className="text-sm text-slate-500">{cliente.telefono}</p>}
+                {cliente.email && <p className="text-sm text-slate-500">{cliente.email}</p>}
+                {cliente.direccion && <p className="text-sm text-slate-500">{cliente.direccion}</p>}
+                {cliente.proyecto && (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider">Proyecto</p>
+                    <p className="font-medium text-slate-800">{cliente.proyecto}</p>
+                  </div>
+                )}
               </div>
 
               {/* Items */}
-              <div className="mb-6 space-y-2">
-                {items.map(item => (
-                  <div key={item.id} className="flex justify-between py-2 border-b border-slate-100">
-                    <div>
-                      <p className="font-medium text-slate-900">{item.titulo}</p>
-                      {item.descripcion && <p className="text-xs text-slate-500">{item.descripcion}</p>}
-                    </div>
-                    <p className="font-medium text-slate-900">${item.precio.toFixed(2)}</p>
-                  </div>
-                ))}
+              <div className="mb-8">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-slate-900">
+                      <th className="text-left py-2 text-xs font-bold text-slate-900 uppercase">Descripción</th>
+                      <th className="text-right py-2 text-xs font-bold text-slate-900 uppercase">Importe</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map(item => (
+                      <tr key={item.id} className="border-b border-slate-100">
+                        <td className="py-3 pr-4">
+                          <p className="font-medium text-slate-900">{item.titulo}</p>
+                          {item.descripcion && <p className="text-xs text-slate-500 mt-0.5">{item.descripcion}</p>}
+                        </td>
+                        <td className="text-right py-3 font-medium text-slate-900">${item.precio.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
               {/* Totals */}
-              <div className="pt-4 border-t border-slate-200">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-500">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-500">IVA ({config.iva}%)</span>
-                  <span>${iva.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between py-2 bg-slate-900 -mx-6 px-6 -mb-6 mt-2 rounded-b-lg">
-                  <span className="font-bold text-white">TOTAL</span>
-                  <span className="font-bold text-white text-lg">${total.toFixed(2)}</span>
+              <div className="mb-8">
+                <div className="flex justify-end">
+                  <div className="w-64">
+                    <div className="flex justify-between py-2 text-sm">
+                      <span className="text-slate-500">Subtotal</span>
+                      <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    </div>
+                    {config.ivaEnabled && (
+                      <div className="flex justify-between py-2 text-sm">
+                        <span className="text-slate-500">IVA ({config.iva}%)</span>
+                        <span className="font-medium">${iva.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between py-3 px-4 bg-slate-900 -mx-4 -mb-4 rounded-b-xl">
+                      <span className="font-bold text-white">TOTAL</span>
+                      <span className="font-bold text-white text-xl">${total.toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {/* Conditions Footer */}
+              {(enabledConditions.length > 0 || config.condicionesCustom) && (
+                <div className="pt-6 border-t border-slate-200">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Condiciones</p>
+                  <ul className="text-xs text-slate-600 space-y-1">
+                    {enabledConditions.map(condition => (
+                      <li key={condition.id}>• {condition.label}</li>
+                    ))}
+                    {config.condicionesCustom.split('\n').map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-slate-400 mt-4">Válido por {config.validez} días</p>
+                </div>
+              )}
+
+              {/* Professional Footer */}
+              {profesional.matricula && (
+                <div className="pt-4 mt-4 border-t border-slate-100 text-center">
+                  <p className="text-xs text-slate-400">Matrícula: {profesional.matricula}</p>
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -95,17 +208,39 @@ export const StepPreview: React.FC = () => {
         <div className="lg:col-span-1 space-y-4">
           <Card>
             <h3 className="font-bold text-slate-900 mb-2">¡Listo!</h3>
-            <p className="text-sm text-slate-500 mb-4">Revisa y envía tu presupuesto</p>
+            <p className="text-sm text-slate-500 mb-4">Guarda y comparte tu presupuesto</p>
             
             <div className="space-y-3">
-              <Button variant="whatsapp" fullWidth onClick={handleWhatsApp}>
-                <span className="material-symbols-outlined">send</span>
-                Enviar por WhatsApp
+              <Button variant="primary" fullWidth onClick={handleSaveQuote}>
+                <span className="material-symbols-outlined">save</span>
+                Guardar
               </Button>
-              <Button variant="secondary" fullWidth>
+              
+              <div className="relative">
+                <Button variant="whatsapp" fullWidth onClick={() => setShowShareOptions(!showShareOptions)}>
+                  <span className="material-symbols-outlined">send</span>
+                  Enviar por WhatsApp
+                </Button>
+                
+                {showShareOptions && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-elevated border border-slate-200 overflow-hidden z-10">
+                    <button onClick={() => handleWhatsApp('text')} className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3">
+                      <span className="material-symbols-outlined text-green-500">chat</span>
+                      <span className="text-sm">Solo texto</span>
+                    </button>
+                    <button onClick={() => handleWhatsApp('pdf')} className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3">
+                      <span className="material-symbols-outlined text-red-500">picture_as_pdf</span>
+                      <span className="text-sm">Con PDF</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <Button variant="secondary" fullWidth onClick={handleDownloadPDF} disabled={isGenerating}>
                 <span className="material-symbols-outlined">download</span>
-                Descargar PDF
+                {isGenerating ? 'Generando...' : 'Descargar PDF'}
               </Button>
+              
               <Button variant="ghost" fullWidth onClick={() => goToStep(1)}>
                 <span className="material-symbols-outlined">edit</span>
                 Editar
@@ -118,7 +253,7 @@ export const StepPreview: React.FC = () => {
               <span className="material-symbols-outlined text-primary">lightbulb</span>
               <div>
                 <p className="font-medium text-slate-900 text-sm">Consejo</p>
-                <p className="text-xs text-slate-500 mt-1">Envía por WhatsApp para mayor velocidad de respuesta.</p>
+                <p className="text-xs text-slate-500 mt-1">Envía el PDF por WhatsApp para una presentación profesional.</p>
               </div>
             </div>
           </Card>
