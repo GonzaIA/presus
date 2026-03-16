@@ -6,6 +6,7 @@ export const StepPreview: React.FC = () => {
   const { profesional, cliente, items, config, goToStep, saveQuote } = useQuoteStore();
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [zoom, setZoom] = useState(100);
   const documentRef = React.useRef<HTMLDivElement>(null);
 
   const calcularTotal = () => {
@@ -39,7 +40,13 @@ export const StepPreview: React.FC = () => {
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
       };
       
-      await html2pdf().set(opt).from(element).save();
+      const pdf = html2pdf().set(opt).from(element);
+      await pdf.save();
+      
+      // Open PDF in new tab after save
+      const blob = await pdf.output('blob');
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error al generar PDF');
@@ -54,28 +61,43 @@ export const StepPreview: React.FC = () => {
       ...customConditions
     ];
     
-    let mensaje = `*PRESUPUESTO*
-━━━━━━━━━━━━━━━━
+    // Build detailed items message
+    const itemsDetail = items.map((item, idx) => {
+      let line = `${idx + 1}. ${item.titulo}`;
+      if (item.descripcion) {
+        line += `\n   ${item.descripcion}`;
+      }
+      line += `: $${item.precio.toFixed(2)}`;
+      return line;
+    }).join('\n');
+    
+    const mensaje = `*PRESUPUESTO*
+━━━━━━━━━━━━━━━━━━━━
 
-*Cliente:* ${cliente.nombre || 'Sin nombre'}
-${cliente.empresa ? `*Empresa:* ${cliente.empresa}` : ''}
-${cliente.telefono ? `*Tel:* ${cliente.telefono}` : ''}
-${cliente.proyecto ? `*Proyecto:* ${cliente.proyecto}` : ''}
+*CLIENTE*
+👤 ${cliente.nombre || 'Sin nombre'}
+${cliente.empresa ? `🏢 ${cliente.empresa}` : ''}
+${cliente.telefono ? `📞 ${cliente.telefono}` : ''}
+${cliente.email ? `📧 ${cliente.email}` : ''}
+${cliente.direccion ? `📍 ${cliente.direccion}` : ''}
+${cliente.proyecto ? `\n📋 *Proyecto:* ${cliente.proyecto}` : ''}
 
-*Items:*
-${items.map(item => `• ${item.titulo}: $${item.precio.toFixed(2)}`).join('\n')}
+*DETALLE DEL PRESUPUESTO*
+${itemsDetail}
 
-━━━━━━━━━━━━━━━━
-*Subtotal:* $${subtotal.toFixed(2)}
-${config.ivaEnabled ? `*IVA (${config.iva}%):* $${iva.toFixed(2)}` : ''}
-*TOTAL:* $${total.toFixed(2)}
-━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
+💰 *Subtotal:* $${subtotal.toFixed(2)}
+${config.ivaEnabled ? `📊 *IVA (${config.iva}%):* $${iva.toFixed(2)}` : ''}
+✅ *TOTAL:* $${total.toFixed(2)}
+━━━━━━━━━━━━━━━━━━━━
 
-${condiciones.length > 0 ? `*Condiciones:*\n${condiciones.map(c => `• ${c}`).join('\n')}\n\n` : ''}*Válido ${config.validez} días*
+${condiciones.length > 0 ? `📝 *Condiciones:*\n${condiciones.map(c => `• ${c}`).join('\n')}\n\n` : ''}⏰ *Válido por ${config.validez} días*
 
-${profesional.nombre}
-${profesional.contacto}
-${profesional.alias ? `Alias: ${profesional.alias}` : ''}`;
+━━━━━━━━━━━━━━━━━━━━
+👨‍💼 ${profesional.nombre || 'Tu Nombre'}
+${profesional.contacto || ''}
+${profesional.alias ? `💳 Alias: ${profesional.alias}` : ''}
+${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
 
     const phone = cliente.telefono?.replace(/\D/g, '') || '';
     const encoded = encodeURIComponent(mensaje);
@@ -86,7 +108,7 @@ ${profesional.alias ? `Alias: ${profesional.alias}` : ''}`;
       handleDownloadPDF().then(() => {
         setTimeout(() => {
           window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
-        }, 1000);
+        }, 1500);
       });
     }
     setShowShareOptions(false);
@@ -96,159 +118,173 @@ ${profesional.alias ? `Alias: ${profesional.alias}` : ''}`;
     goToStep(1);
   };
 
+  const adjustZoom = (delta: number) => {
+    setZoom(prev => Math.max(50, Math.min(150, prev + delta)));
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Actions Bar */}
       <div className="flex flex-wrap gap-2 justify-between items-center">
-        <div className="flex gap-2">
-          <Button variant="primary" onClick={handleSaveQuote} className="h-10 text-sm">
-            <span className="material-symbols-outlined text-lg">save</span>
-            Guardar
-          </Button>
-        </div>
+        <Button variant="primary" onClick={handleSaveQuote} className="h-9 text-xs px-3">
+          <span className="material-symbols-outlined text-sm">save</span>
+          Guardar
+        </Button>
         
-        <div className="flex gap-2">
+        <div className="flex gap-1">
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-1 bg-slate-100 rounded-lg px-2">
+            <button onClick={() => adjustZoom(-10)} className="p-1 hover:bg-slate-200 rounded">
+              <span className="material-symbols-outlined text-sm">remove</span>
+            </button>
+            <span className="text-xs w-10 text-center">{zoom}%</span>
+            <button onClick={() => adjustZoom(10)} className="p-1 hover:bg-slate-200 rounded">
+              <span className="material-symbols-outlined text-sm">add</span>
+            </button>
+          </div>
+
           <div className="relative">
-            <Button variant="whatsapp" onClick={() => setShowShareOptions(!showShareOptions)} className="h-10 text-sm">
-              <span className="material-symbols-outlined text-lg">send</span>
+            <Button variant="whatsapp" onClick={() => setShowShareOptions(!showShareOptions)} className="h-9 text-xs px-3">
+              <span className="material-symbols-outlined text-sm">send</span>
               WhatsApp
             </Button>
             
             {showShareOptions && (
-              <div className="absolute top-full right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-20">
-                <button onClick={() => handleWhatsApp('text')} className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2 text-sm">
-                  <span className="material-symbols-outlined text-green-500 text-lg">chat</span>
+              <div className="absolute top-full right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden z-20">
+                <button onClick={() => handleWhatsApp('text')} className="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-xs">
+                  <span className="material-symbols-outlined text-green-500 text-sm">chat</span>
                   Solo texto
                 </button>
-                <button onClick={() => handleWhatsApp('pdf')} className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2 text-sm">
-                  <span className="material-symbols-outlined text-red-500 text-lg">picture_as_pdf</span>
+                <button onClick={() => handleWhatsApp('pdf')} className="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-xs">
+                  <span className="material-symbols-outlined text-red-500 text-sm">picture_as_pdf</span>
                   Con PDF
                 </button>
               </div>
             )}
           </div>
 
-          <Button variant="secondary" onClick={handleDownloadPDF} disabled={isGenerating} className="h-10 text-sm">
-            <span className="material-symbols-outlined text-lg">download</span>
-            {isGenerating ? '...' : 'PDF'}
+          <Button variant="secondary" onClick={handleDownloadPDF} disabled={isGenerating} className="h-9 text-xs px-3">
+            <span className="material-symbols-outlined text-sm">download</span>
           </Button>
 
-          <Button variant="ghost" onClick={handleEdit} className="h-10 text-sm">
-            <span className="material-symbols-outlined text-lg">edit</span>
+          <Button variant="ghost" onClick={handleEdit} className="h-9 w-9 p-0">
+            <span className="material-symbols-outlined text-sm">edit</span>
           </Button>
         </div>
       </div>
 
-      {/* Document Preview */}
-      <div className="overflow-auto bg-slate-100 rounded-xl p-4">
+      {/* Document Preview with Zoom */}
+      <div className="overflow-auto bg-slate-100 rounded-lg p-2 max-h-[70vh]">
         <div 
           ref={documentRef}
-          className="bg-white mx-auto"
+          className="bg-white mx-auto transition-transform"
           style={{ 
-            width: '210mm', 
-            minHeight: '297mm', 
-            padding: '15mm',
-            fontSize: '10pt',
-            lineHeight: 1.3
+            width: `${210 * zoom / 100}mm`, 
+            minHeight: `${297 * zoom / 100}mm`,
+            padding: `${15 * zoom / 100}mm`,
+            fontSize: `${10 * zoom / 100}pt`,
+            lineHeight: 1.3,
+            transform: `scale(1)`,
+            transformOrigin: 'top center'
           }}
         >
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15mm' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: `${15 * zoom / 100}mm` }}>
             <div>
               {profesional.logo ? (
-                <img src={profesional.logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', marginBottom: '5px' }} />
+                <img src={profesional.logo} alt="Logo" style={{ width: `${40 * zoom / 100}px`, height: `${40 * zoom / 100}px`, objectFit: 'contain', marginBottom: `${5 * zoom / 100}px` }} />
               ) : (
-                <div style={{ width: '40px', height: '40px', backgroundColor: '#2563eb', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
-                  <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '20px' }}>bolt</span>
+                <div style={{ width: `${40 * zoom / 100}px`, height: `${40 * zoom / 100}px`, backgroundColor: '#2563eb', borderRadius: `${6 * zoom / 100}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: `${5 * zoom / 100}px` }}>
+                  <span className="material-symbols-outlined" style={{ color: 'white', fontSize: `${20 * zoom / 100}px` }}>bolt</span>
                 </div>
               )}
-              <p style={{ fontWeight: 'bold', fontSize: '12pt', color: '#1e293b' }}>{profesional.nombre || 'Tu Nombre'}</p>
-              <p style={{ fontSize: '9pt', color: '#64748b' }}>{profesional.profesion}</p>
-              {profesional.contacto && <p style={{ fontSize: '8pt', color: '#94a3b8', marginTop: '2px' }}>{profesional.contacto}</p>}
-              {profesional.alias && <p style={{ fontSize: '8pt', color: '#2563eb', marginTop: '2px' }}>Alias: {profesional.alias}</p>}
+              <p style={{ fontWeight: 'bold', fontSize: `${12 * zoom / 100}pt`, color: '#1e293b' }}>{profesional.nombre || 'Tu Nombre'}</p>
+              <p style={{ fontSize: `${9 * zoom / 100}pt`, color: '#64748b' }}>{profesional.profesion}</p>
+              {profesional.contacto && <p style={{ fontSize: `${8 * zoom / 100}pt`, color: '#94a3b8', marginTop: `${2 * zoom / 100}px` }}>{profesional.contacto}</p>}
+              {profesional.alias && <p style={{ fontSize: `${8 * zoom / 100}pt`, color: '#2563eb', marginTop: `${2 * zoom / 100}px` }}>Alias: {profesional.alias}</p>}
             </div>
             <div style={{ textAlign: 'right' }}>
-              <span style={{ display: 'inline-block', padding: '3px 8px', backgroundColor: '#1e293b', color: 'white', fontSize: '8pt', fontWeight: 'bold', borderRadius: '4px' }}>PRESUPUESTO</span>
-              <p style={{ fontSize: '8pt', color: '#94a3b8', marginTop: '5px' }}>SQ-{Date.now().toString().slice(-6)}</p>
+              <span style={{ display: 'inline-block', padding: `${3 * zoom / 100}px ${8 * zoom / 100}px`, backgroundColor: '#1e293b', color: 'white', fontSize: `${8 * zoom / 100}pt`, fontWeight: 'bold', borderRadius: `${4 * zoom / 100}px` }}>PRESUPUESTO</span>
+              <p style={{ fontSize: `${8 * zoom / 100}pt`, color: '#94a3b8', marginTop: `${5 * zoom / 100}px` }}>SQ-{Date.now().toString().slice(-6)}</p>
             </div>
           </div>
 
           {/* Client Info */}
-          <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '8px', marginBottom: '15mm' }}>
-            <p style={{ fontSize: '7pt', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Cliente</p>
-            <p style={{ fontWeight: '600', fontSize: '11pt', color: '#1e293b' }}>{cliente.nombre || 'Sin nombre'}</p>
-            {cliente.empresa && <p style={{ fontSize: '9pt', color: '#475569' }}>{cliente.empresa}</p>}
-            {cliente.telefono && <p style={{ fontSize: '9pt', color: '#64748b' }}>{cliente.telefono}</p>}
-            {cliente.email && <p style={{ fontSize: '9pt', color: '#64748b' }}>{cliente.email}</p>}
-            {cliente.direccion && <p style={{ fontSize: '9pt', color: '#64748b' }}>{cliente.direccion}</p>}
+          <div style={{ backgroundColor: '#f8fafc', padding: `${10 * zoom / 100}px`, borderRadius: `${8 * zoom / 100}px`, marginBottom: `${15 * zoom / 100}mm` }}>
+            <p style={{ fontSize: `${7 * zoom / 100}pt`, color: '#94a3b8', textTransform: 'uppercase', marginBottom: `${4 * zoom / 100}px` }}>Cliente</p>
+            <p style={{ fontWeight: '600', fontSize: `${11 * zoom / 100}pt`, color: '#1e293b' }}>{cliente.nombre || 'Sin nombre'}</p>
+            {cliente.empresa && <p style={{ fontSize: `${9 * zoom / 100}pt`, color: '#475569' }}>{cliente.empresa}</p>}
+            {cliente.telefono && <p style={{ fontSize: `${9 * zoom / 100}pt`, color: '#64748b' }}>{cliente.telefono}</p>}
+            {cliente.email && <p style={{ fontSize: `${9 * zoom / 100}pt`, color: '#64748b' }}>{cliente.email}</p>}
+            {cliente.direccion && <p style={{ fontSize: `${9 * zoom / 100}pt`, color: '#64748b' }}>{cliente.direccion}</p>}
             {cliente.proyecto && (
-              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
-                <p style={{ fontSize: '7pt', color: '#94a3b8', textTransform: 'uppercase' }}>Proyecto</p>
-                <p style={{ fontSize: '10pt', color: '#2563eb', fontWeight: '500' }}>{cliente.proyecto}</p>
+              <div style={{ marginTop: `${8 * zoom / 100}px`, paddingTop: `${8 * zoom / 100}px`, borderTop: '1px solid #e2e8f0' }}>
+                <p style={{ fontSize: `${7 * zoom / 100}pt`, color: '#94a3b8', textTransform: 'uppercase' }}>Proyecto</p>
+                <p style={{ fontSize: `${10 * zoom / 100}pt`, color: '#2563eb', fontWeight: '500' }}>{cliente.proyecto}</p>
               </div>
             )}
           </div>
 
-          {/* Items Table */}
-          <table style={{ width: '100%', marginBottom: '15mm', fontSize: '9pt' }}>
+          {/* Items Table - Compact */}
+          <table style={{ width: '100%', marginBottom: `${15 * zoom / 100}mm`, fontSize: `${9 * zoom / 100}pt` }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #1e293b' }}>
-                <th style={{ textAlign: 'left', padding: '5px 0', fontSize: '8pt', color: '#475569', textTransform: 'uppercase' }}>Descripción</th>
-                <th style={{ textAlign: 'right', padding: '5px 0', fontSize: '8pt', color: '#475569', textTransform: 'uppercase', width: '60mm' }}>Importe</th>
+                <th style={{ textAlign: 'left', padding: `${5 * zoom / 100}px 0`, fontSize: `${8 * zoom / 100}pt`, color: '#475569', textTransform: 'uppercase' }}>Descripción</th>
+                <th style={{ textAlign: 'right', padding: `${5 * zoom / 100}px 0`, fontSize: `${8 * zoom / 100}pt`, color: '#475569', textTransform: 'uppercase', width: `${60 * zoom / 100}mm` }}>Importe</th>
               </tr>
             </thead>
             <tbody>
               {items.map(item => (
                 <tr key={item.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                  <td style={{ padding: '6px 0' }}>
-                    <p style={{ fontWeight: '500', color: '#1e293b', fontSize: '9pt' }}>{item.titulo}</p>
-                    {item.descripcion && <p style={{ fontSize: '7pt', color: '#94a3b8', marginTop: '2px' }}>{item.descripcion}</p>}
+                  <td style={{ padding: `${6 * zoom / 100}px 0` }}>
+                    <p style={{ fontWeight: '500', color: '#1e293b', fontSize: `${9 * zoom / 100}pt` }}>{item.titulo}</p>
+                    {item.descripcion && <p style={{ fontSize: `${7 * zoom / 100}pt`, color: '#94a3b8', marginTop: `${2 * zoom / 100}px` }}>{item.descripcion}</p>}
                   </td>
-                  <td style={{ textAlign: 'right', padding: '6px 0', fontWeight: '500', color: '#1e293b' }}>${item.precio.toFixed(2)}</td>
+                  <td style={{ textAlign: 'right', padding: `${6 * zoom / 100}px 0`, fontWeight: '500', color: '#1e293b' }}>${item.precio.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           {/* Totals */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15mm' }}>
-            <div style={{ width: '55mm' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '9pt' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: `${15 * zoom / 100}mm` }}>
+            <div style={{ width: `${55 * zoom / 100}mm` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: `${4 * zoom / 100}px 0`, fontSize: `${9 * zoom / 100}pt` }}>
                 <span style={{ color: '#64748b' }}>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
               {config.ivaEnabled && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '9pt' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: `${4 * zoom / 100}px 0`, fontSize: `${9 * zoom / 100}pt` }}>
                   <span style={{ color: '#64748b' }}>IVA ({config.iva}%)</span>
                   <span>${iva.toFixed(2)}</span>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', backgroundColor: '#1e293b', color: 'white', borderRadius: '6px', marginTop: '4px' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '10pt' }}>TOTAL</span>
-                <span style={{ fontWeight: 'bold', fontSize: '12pt' }}>${total.toFixed(2)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: `${8 * zoom / 100}px`, backgroundColor: '#1e293b', color: 'white', borderRadius: `${6 * zoom / 100}px`, marginTop: `${4 * zoom / 100}px` }}>
+                <span style={{ fontWeight: 'bold', fontSize: `${10 * zoom / 100}pt` }}>TOTAL</span>
+                <span style={{ fontWeight: 'bold', fontSize: `${12 * zoom / 100}pt` }}>${total.toFixed(2)}</span>
               </div>
             </div>
           </div>
 
           {/* Conditions */}
           {(enabledConditions.length > 0 || customConditions.length > 0) && (
-            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '10mm', marginBottom: '10mm' }}>
-              <p style={{ fontSize: '7pt', color: '#64748b', textTransform: 'uppercase', marginBottom: '5px', fontWeight: '600' }}>Condiciones</p>
-              <ul style={{ fontSize: '8pt', color: '#475569', paddingLeft: '12px', margin: 0 }}>
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: `${10 * zoom / 100}mm`, marginBottom: `${10 * zoom / 100}mm` }}>
+              <p style={{ fontSize: `${7 * zoom / 100}pt`, color: '#64748b', textTransform: 'uppercase', marginBottom: `${5 * zoom / 100}px`, fontWeight: '600' }}>Condiciones</p>
+              <ul style={{ fontSize: `${8 * zoom / 100}pt`, color: '#475569', paddingLeft: `${12 * zoom / 100}px`, margin: 0 }}>
                 {enabledConditions.map(condition => (
-                  <li key={condition.id} style={{ marginBottom: '2px' }}>{condition.label}</li>
+                  <li key={condition.id} style={{ marginBottom: `${2 * zoom / 100}px` }}>{condition.label}</li>
                 ))}
                 {customConditions.map((line, idx) => (
                   <li key={idx}>{line}</li>
                 ))}
               </ul>
-              <p style={{ fontSize: '8pt', color: '#94a3b8', marginTop: '8px' }}>Válido por {config.validez} días</p>
+              <p style={{ fontSize: `${8 * zoom / 100}pt`, color: '#94a3b8', marginTop: `${8 * zoom / 100}px` }}>Válido por {config.validez} días</p>
             </div>
           )}
 
           {/* Professional Footer */}
-          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '8mm', textAlign: 'center' }}>
-            {profesional.matricula && <p style={{ fontSize: '8pt', color: '#94a3b8' }}>Matrícula: {profesional.matricula}</p>}
+          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: `${8 * zoom / 100}mm`, textAlign: 'center' }}>
+            {profesional.matricula && <p style={{ fontSize: `${8 * zoom / 100}pt`, color: '#94a3b8' }}>Matrícula: {profesional.matricula}</p>}
           </div>
         </div>
       </div>
