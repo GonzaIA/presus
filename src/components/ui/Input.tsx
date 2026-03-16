@@ -10,51 +10,43 @@ interface InputProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   type?: string;
   rows?: number;
-  step?: string;
 }
 
-export const Input: React.FC<InputProps> = ({ label, error, className, asTextarea, rows = 2, ...props }) => {
+export const Input: React.FC<InputProps> = ({ 
+  label, 
+  error, 
+  className = '', 
+  asTextarea, 
+  rows = 3, 
+  ...props 
+}) => {
   const baseClasses = `
-    w-full px-4 py-3
-    bg-white dark:bg-slate-900
-    border border-slate-200 dark:border-slate-700
-    rounded-lg
-    text-slate-900 dark:text-slate-100 placeholder-slate-400
-    focus:border-primary focus:ring-2 focus:ring-primary/10
-    outline-none transition-all duration-200 text-base
-    shadow-sm hover:shadow-md
+    w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white
+    text-slate-800 placeholder-slate-400 text-sm
+    focus:border-primary focus:outline-none focus:ring-0
+    transition-colors duration-200
   `;
 
-  if (asTextarea) {
-    return (
-      <div className="w-full mb-4">
-        {label && (
-          <label className="block text-xs font-medium text-slate-500 mb-1 ml-1">
-            {label}
-          </label>
-        )}
-        <textarea
-          rows={rows}
-          className={`${baseClasses} resize-none ${className}`}
-          {...props as React.TextareaHTMLAttributes<HTMLTextAreaElement>}
-        />
-        {error && <p className="mt-1 text-xs text-red-500 ml-1">{error}</p>}
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full mb-4">
+    <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-xs font-medium text-slate-500 mb-1 ml-1">
+        <label className="block text-xs font-medium text-slate-600 mb-2">
           {label}
         </label>
       )}
-      <input
-        className={`${baseClasses} ${className}`}
-        {...props as React.InputHTMLAttributes<HTMLInputElement>}
-      />
-      {error && <p className="mt-1 text-xs text-red-500 ml-1">{error}</p>}
+      {asTextarea ? (
+        <textarea
+          rows={rows}
+          className={`${baseClasses} resize-none ${error ? 'border-red-400' : ''}`}
+          {...props as React.TextareaHTMLAttributes<HTMLTextAreaElement>}
+        />
+      ) : (
+        <input
+          className={`${baseClasses} ${error ? 'border-red-400' : ''}`}
+          {...props as React.InputHTMLAttributes<HTMLInputElement>}
+        />
+      )}
+      {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
     </div>
   );
 };

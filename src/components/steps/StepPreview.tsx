@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
 import { Button } from '../ui/Button';
-import { ArrowLeft, Send, Download } from 'lucide-react';
+import { Card } from '../ui/Card';
 
 export const StepPreview: React.FC = () => {
   const { profesional, cliente, items, config, goToStep } = useQuoteStore();
@@ -15,98 +15,115 @@ export const StepPreview: React.FC = () => {
   const { subtotal, iva, total } = calcularTotal();
 
   const handleWhatsApp = () => {
-    const mensaje = `Hola ${cliente.nombre || 'Cliente'},\n\nAdjunto el presupuesto para el proyecto: "${cliente.proyecto || 'Sin título'}".\n\nTotal: $${total.toFixed(2)}\n\nSaludos,\n${profesional.nombre || 'Tu Nombre'}`;
+    const mensaje = `Hola ${cliente.nombre || 'Cliente'},\n\nPresupuesto para: "${cliente.proyecto || 'Sin título'}".\n\nTotal: $${total.toFixed(2)}\n\nSaludos,\n${profesional.nombre || 'Tu Nombre'}`;
     const encodedMessage = encodeURIComponent(mensaje);
-    window.open(`https://wa.me/${cliente.nombre || ''}?text=${encodedMessage}`, '_blank');
+    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Contenido Principal */}
-      <main className="flex-1 px-4 py-4 flex flex-col items-center overflow-y-auto">
-        {/* Hoja A4 Digital */}
-        <div className="w-full bg-white dark:bg-slate-900 rounded-sm p-6 border border-slate-200 dark:border-slate-700 relative shadow-lg" style={{ aspectRatio: '1 / 1.414', maxHeight: '50vh' }}>
-          {/* Encabezado */}
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              {profesional.logo && (
-                <img src={profesional.logo} alt="Logo" className="w-12 h-12 object-contain mb-2" />
-              )}
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {profesional.nombre || 'Tu Nombre'}
-              </h2>
-              <p className="text-xs text-slate-500">{profesional.profesion}</p>
+    <div className="space-y-6">
+      <div className="lg:grid lg:grid-cols-3 lg:gap-6">
+        {/* Preview */}
+        <div className="lg:col-span-2">
+          <Card>
+            <div className="flex items-center gap-2 mb-4 text-sm text-slate-500">
+              <span className="material-symbols-outlined text-success">check_circle</span>
+              Vista previa
             </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold text-primary uppercase">Presupuesto Oficial</p>
-              <p className="text-[8px] text-slate-400">Ref: SQ-2024-001</p>
-            </div>
-          </div>
-
-          {/* Datos Cliente */}
-          <div className="mb-6 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-            <h3 className="text-[10px] font-bold text-slate-500 uppercase mb-1">Cliente</h3>
-            <p className="text-sm font-medium">{cliente.nombre || 'Sin nombre'}</p>
-            {cliente.direccion && <p className="text-xs text-slate-500">{cliente.direccion}</p>}
-            {cliente.proyecto && <p className="text-xs text-slate-600 mt-1"><strong>Proyecto:</strong> {cliente.proyecto}</p>}
-          </div>
-
-          {/* Items */}
-          <div className="flex-1">
-            <div className="space-y-3">
-              {items.map((item) => (
-                <div key={item.id} className="flex justify-between items-start border-b border-slate-100 dark:border-slate-800 pb-2">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{item.titulo}</p>
-                    {item.descripcion && <p className="text-[10px] text-slate-500">{item.descripcion}</p>}
-                  </div>
-                  <p className="text-sm font-medium">${item.precio.toFixed(2)}</p>
+            
+            {/* Document */}
+            <div className="bg-white border border-slate-200 rounded-lg p-6" style={{ aspectRatio: '1/1.414' }}>
+              {/* Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  {profesional.logo ? (
+                    <img src={profesional.logo} alt="Logo" className="w-12 h-12 object-contain mb-2" />
+                  ) : (
+                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-2">
+                      <span className="material-symbols-outlined text-white text-xl">bolt</span>
+                    </div>
+                  )}
+                  <h3 className="font-bold text-slate-900">{profesional.nombre || 'Tu Nombre'}</h3>
+                  <p className="text-xs text-slate-500">{profesional.profesion}</p>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="text-right">
+                  <span className="inline-block px-3 py-1 bg-slate-900 text-white text-xs font-bold rounded-full">PRESUPUESTO</span>
+                  <p className="text-xs text-slate-400 mt-1">SQ-{Date.now().toString().slice(-6)}</p>
+                </div>
+              </div>
 
-          {/* Totales */}
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex justify-between text-xs text-slate-600 mb-1">
-              <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
+              {/* Client */}
+              <div className="mb-6 p-3 bg-slate-50 rounded-lg">
+                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Cliente</p>
+                <p className="font-medium text-slate-900">{cliente.nombre || 'Sin nombre'}</p>
+                {cliente.proyecto && <p className="text-sm text-slate-500">{cliente.proyecto}</p>}
+              </div>
+
+              {/* Items */}
+              <div className="mb-6 space-y-2">
+                {items.map(item => (
+                  <div key={item.id} className="flex justify-between py-2 border-b border-slate-100">
+                    <div>
+                      <p className="font-medium text-slate-900">{item.titulo}</p>
+                      {item.descripcion && <p className="text-xs text-slate-500">{item.descripcion}</p>}
+                    </div>
+                    <p className="font-medium text-slate-900">${item.precio.toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Totals */}
+              <div className="pt-4 border-t border-slate-200">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-slate-500">Subtotal</span>
+                  <span>${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-slate-500">IVA ({config.iva}%)</span>
+                  <span>${iva.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between py-2 bg-slate-900 -mx-6 px-6 -mb-6 mt-2 rounded-b-lg">
+                  <span className="font-bold text-white">TOTAL</span>
+                  <span className="font-bold text-white text-lg">${total.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between text-xs text-slate-600 mb-2">
-              <span>IVA ({config.iva}%)</span>
-              <span>${iva.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-bold text-slate-900 dark:text-white">TOTAL</span>
-              <span className="font-bold text-primary">${total.toFixed(2)}</span>
-            </div>
-          </div>
+          </Card>
         </div>
 
-        <div className="mt-6 text-center">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">¡Todo listo!</h2>
-          <p className="text-sm text-slate-500 mt-1">Revisa los detalles antes de enviar.</p>
-        </div>
-      </main>
+        {/* Actions */}
+        <div className="lg:col-span-1 space-y-4">
+          <Card>
+            <h3 className="font-bold text-slate-900 mb-2">¡Listo!</h3>
+            <p className="text-sm text-slate-500 mb-4">Revisa y envía tu presupuesto</p>
+            
+            <div className="space-y-3">
+              <Button variant="whatsapp" fullWidth onClick={handleWhatsApp}>
+                <span className="material-symbols-outlined">send</span>
+                Enviar por WhatsApp
+              </Button>
+              <Button variant="secondary" fullWidth>
+                <span className="material-symbols-outlined">download</span>
+                Descargar PDF
+              </Button>
+              <Button variant="ghost" fullWidth onClick={() => goToStep(1)}>
+                <span className="material-symbols-outlined">edit</span>
+                Editar
+              </Button>
+            </div>
+          </Card>
 
-      {/* Footer de Acción */}
-      <footer className="p-4 space-y-3 bg-white dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800">
-        <Button variant="whatsapp" fullWidth onClick={handleWhatsApp} icon={<Send size={18} />}>
-          Enviar por WhatsApp
-        </Button>
-        <Button variant="secondary" fullWidth icon={<Download size={18} />}>
-          Descargar PDF
-        </Button>
-        <div className="flex justify-center pt-2">
-          <button 
-            onClick={() => goToStep(1)}
-            className="text-sm font-medium text-primary flex items-center gap-1"
-          >
-            <ArrowLeft size={14} />
-            Editar cotización
-          </button>
+          <Card className="bg-blue-50 border-blue-100">
+            <div className="flex gap-3">
+              <span className="material-symbols-outlined text-primary">lightbulb</span>
+              <div>
+                <p className="font-medium text-slate-900 text-sm">Consejo</p>
+                <p className="text-xs text-slate-500 mt-1">Envía por WhatsApp para mayor velocidad de respuesta.</p>
+              </div>
+            </div>
+          </Card>
         </div>
-      </footer>
+      </div>
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { useQuoteStore } from '../../store/useQuoteStore';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { Trash2, Edit2, Plus } from 'lucide-react';
 
 export const StepItems: React.FC = () => {
   const { items, addItem, removeItem, updateItem, config } = useQuoteStore();
@@ -14,7 +13,6 @@ export const StepItems: React.FC = () => {
   const handleAddItem = () => {
     if (newItem.titulo && newItem.precio) {
       addItem();
-      // Actualizar el último item añadido con los datos del formulario
       const lastItem = items[items.length - 1];
       updateItem(lastItem.id, {
         titulo: newItem.titulo,
@@ -29,11 +27,7 @@ export const StepItems: React.FC = () => {
   const handleEditItem = (id: number) => {
     const item = items.find(i => i.id === id);
     if (item) {
-      setNewItem({
-        titulo: item.titulo,
-        descripcion: item.descripcion,
-        precio: item.precio.toString()
-      });
+      setNewItem({ titulo: item.titulo, descripcion: item.descripcion, precio: item.precio.toString() });
       setEditingId(id);
       setShowForm(true);
     }
@@ -41,11 +35,7 @@ export const StepItems: React.FC = () => {
 
   const saveEdit = () => {
     if (editingId !== null) {
-      updateItem(editingId, {
-        titulo: newItem.titulo,
-        descripcion: newItem.descripcion,
-        precio: parseFloat(newItem.precio) || 0
-      });
+      updateItem(editingId, { titulo: newItem.titulo, descripcion: newItem.descripcion, precio: parseFloat(newItem.precio) || 0 });
       setEditingId(null);
       setNewItem({ titulo: '', descripcion: '', precio: '' });
       setShowForm(false);
@@ -61,110 +51,96 @@ export const StepItems: React.FC = () => {
   const { subtotal, iva, total } = calcularTotal();
 
   return (
-    <div className="space-y-4 pb-12">
-      {/* Lista de Items */}
-      <div className="space-y-3">
-        {items.map((item) => (
-          <Card key={item.id} className="group">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg">
-                {item.titulo || 'Sin título'}
-              </h3>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => handleEditItem(item.id)}
-                  className="text-slate-400 hover:text-primary transition-colors"
-                >
-                  <Edit2 size={16} />
-                </button>
-                <button 
-                  onClick={() => removeItem(item.id)}
-                  className="text-slate-400 hover:text-red-500 transition-colors"
-                >
-                  <Trash2 size={16} />
-                </button>
+    <div className="space-y-6">
+      <div className="lg:grid lg:grid-cols-3 lg:gap-6">
+        {/* Items List */}
+        <div className="lg:col-span-2 space-y-4">
+          {items.length === 0 && !showForm && (
+            <Card className="text-center py-12">
+              <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">inventory_2</span>
+              <h3 className="text-lg font-semibold text-slate-700 mb-2">Sin items</h3>
+              <p className="text-slate-500 text-sm mb-4">Añade los servicios o productos de tu presupuesto</p>
+              <Button onClick={() => setShowForm(true)}>Añadir Item</Button>
+            </Card>
+          )}
+
+          {items.map(item => (
+            <Card key={item.id}>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary">receipt</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">{item.titulo || 'Sin título'}</h4>
+                    {item.descripcion && <p className="text-sm text-slate-500">{item.descripcion}</p>}
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <button onClick={() => handleEditItem(item.id)} className="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-lg">
+                    <span className="material-symbols-outlined">edit</span>
+                  </button>
+                  <button onClick={() => removeItem(item.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                    <span className="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-lg font-bold text-primary">${item.precio.toFixed(2)}</span>
+              </div>
+            </Card>
+          ))}
+
+          {/* Add/Edit Form */}
+          {showForm && (
+            <Card>
+              <h4 className="font-semibold text-slate-900 mb-4">{editingId ? 'Editar Item' : 'Nuevo Item'}</h4>
+              <div className="space-y-4">
+                <Input label="Título" placeholder="Ej. Servicio de pintura" value={newItem.titulo} onChange={e => setNewItem({...newItem, titulo: e.target.value})} />
+                <Input label="Descripción" asTextarea placeholder="Detalles del servicio..." value={newItem.descripcion} onChange={e => setNewItem({...newItem, descripcion: e.target.value})} />
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <Input label="Precio" type="number" placeholder="0.00" value={newItem.precio} onChange={e => setNewItem({...newItem, precio: e.target.value})} />
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <Button variant="ghost" onClick={() => { setShowForm(false); setEditingId(null); setNewItem({ titulo: '', descripcion: '', precio: '' }); }}>Cancelar</Button>
+                    <Button onClick={editingId ? saveEdit : handleAddItem}>{editingId ? 'Guardar' : 'Añadir'}</Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Add Button */}
+          {!showForm && items.length > 0 && (
+            <button onClick={() => { setEditingId(null); setNewItem({ titulo: '', descripcion: '', precio: '' }); setShowForm(true); }} className="w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined">add</span>
+              Añadir Item
+            </button>
+          )}
+        </div>
+
+        {/* Summary */}
+        <div className="lg:col-span-1">
+          <Card className="lg:sticky lg:top-6">
+            <h4 className="font-semibold text-slate-900 mb-4">Resumen</h4>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Subtotal</span>
+                <span className="font-medium">${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">IVA ({config.iva}%)</span>
+                <span className="font-medium">${iva.toFixed(2)}</span>
+              </div>
+              <div className="pt-3 border-t border-slate-200">
+                <div className="flex justify-between">
+                  <span className="font-bold text-lg">Total</span>
+                  <span className="font-bold text-xl text-primary">${total.toFixed(2)}</span>
+                </div>
               </div>
             </div>
-            {item.descripcion && (
-              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4">
-                {item.descripcion}
-              </p>
-            )}
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-bold">
-                ${item.precio.toFixed(2)}
-              </span>
-            </div>
           </Card>
-        ))}
-      </div>
-
-      {/* Formulario de Nuevo/Editar Item */}
-      <Card variant="dashed" className={`${showForm ? 'block' : 'hidden'}`}>
-        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-4 text-sm uppercase tracking-wider">
-          {editingId ? 'Editar Item' : 'Add New Item'}
-        </h4>
-        <div className="space-y-4">
-          <Input
-            label="Título del Item"
-            placeholder="Ej. Instalación eléctrica"
-            value={newItem.titulo}
-            onChange={(e) => setNewItem({ ...newItem, titulo: e.target.value })}
-          />
-          <Input
-            label="Descripción"
-            placeholder="Describe el trabajo..."
-            asTextarea
-            rows={2}
-            value={newItem.descripcion}
-            onChange={(e) => setNewItem({ ...newItem, descripcion: e.target.value })}
-          />
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <Input
-                label="Precio"
-                placeholder="0.00"
-                type="number"
-                step="0.01"
-                value={newItem.precio}
-                onChange={(e) => setNewItem({ ...newItem, precio: e.target.value })}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button 
-                onClick={editingId ? saveEdit : handleAddItem}
-                className="h-[46px] px-6"
-              >
-                {editingId ? 'Guardar' : 'Añadir'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Botón Flotante para Añadir */}
-      {!showForm && (
-        <button 
-          onClick={() => { setEditingId(null); setNewItem({ titulo: '', descripcion: '', precio: '' }); setShowForm(true); }}
-          className="fixed bottom-24 right-6 size-14 bg-primary text-white rounded-full shadow-xl shadow-primary/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-20"
-        >
-          <Plus size={28} />
-        </button>
-      )}
-
-      {/* Resumen de Totales */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 mt-6 space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Subtotal</span>
-          <span className="font-medium">${subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-slate-500">IVA ({config.iva}%)</span>
-          <span className="font-medium">${iva.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-          <span className="font-bold">Total</span>
-          <span className="font-bold text-primary">${total.toFixed(2)}</span>
         </div>
       </div>
     </div>
