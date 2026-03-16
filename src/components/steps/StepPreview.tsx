@@ -1,13 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 
 export const StepPreview: React.FC = () => {
   const { profesional, cliente, items, config, goToStep, saveQuote } = useQuoteStore();
-  const [showShareOptions, setShowShareOptions] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const documentRef = useRef<HTMLDivElement>(null);
+  const [showShareOptions, setShowShareOptions] = React.useState(false);
+  const [isGenerating, setIsGenerating] = React.useState(false);
+  const documentRef = React.useRef<HTMLDivElement>(null);
 
   const calcularTotal = () => {
     const subtotal = items.reduce((sum, item) => sum + item.precio, 0);
@@ -32,49 +32,62 @@ export const StepPreview: React.FC = () => {
       const element = documentRef.current;
       
       const opt = {
-        margin: 10,
+        margin: [10, 10, 10, 10] as [number, number, number, number],
         filename: `presupuesto-${cliente.nombre || 'cliente'}-${Date.now()}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
       };
       
       await html2pdf().set(opt).from(element).save();
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Error al generar PDF');
+      alert('Error al generar PDF. Intenta de nuevo.');
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleWhatsApp = (type: 'text' | 'image' | 'pdf') => {
-    const mensaje = `*PRESUPUESTO*
+  const getWhatsAppMessage = () => {
+    const condiciones = [
+      ...enabledConditions.map(c => c.label),
+      ...config.condicionesCustom.split('\n').filter(l => l.trim())
+    ];
+    
+    let mensaje = `*PRESUPUESTO*
+━━━━━━━━━━━━━━━━━━
 
 *Cliente:* ${cliente.nombre || 'Sin nombre'}
-*Proyecto:* ${cliente.proyecto || 'Sin título'}
+${cliente.empresa ? `*Empresa:* ${cliente.empresa}` : ''}
+${cliente.telefono ? `*Teléfono:* ${cliente.telefono}` : ''}
+${cliente.proyecto ? `*Proyecto:* ${cliente.proyecto}` : ''}
 
-*Items:*
-${items.map((item, i) => `${i + 1}. ${item.titulo} - $${item.precio.toFixed(2)}`).join('\n')}
+*Detalle:*
+${items.map((item) => `• ${item.titulo}: $${item.precio.toFixed(2)}`).join('\n')}
 
+━━━━━━━━━━━━━━━━━━
 *Subtotal:* $${subtotal.toFixed(2)}
 ${config.ivaEnabled ? `*IVA (${config.iva}%):* $${iva.toFixed(2)}` : ''}
 *TOTAL:* $${total.toFixed(2)}
+━━━━━━━━━━━━━━━━━━
 
----
+${condiciones.length > 0 ? `*Condiciones:*\n${condiciones.map(c => `• ${c}`).join('\n')}\n\n` : ''}*Válido por ${config.validez} días*
+
 ${profesional.nombre || 'Tu Nombre'}
 ${profesional.contacto || ''}
-${profesional.alias ? `\nAlias para transferencia: ${profesional.alias}` : ''}`;
+${profesional.alias ? `Alias transferencia: ${profesional.alias}` : ''}`;
 
-    const encodedMessage = encodeURIComponent(mensaje);
+    return encodeURIComponent(mensaje);
+  };
+
+  const handleWhatsApp = (type: 'text' | 'pdf') => {
+    const phone = cliente.telefono?.replace(/\D/g, '') || '';
     
     if (type === 'text') {
-      window.open(`https://wa.me/${cliente.telefono?.replace(/\D/g, '') || ''}?text=${encodedMessage}`, '_blank');
-    } else if (type === 'image') {
-      alert('Generando imagen... (funcionalidad en desarrollo)');
+      window.open(`https://wa.me/${phone}?text=${getWhatsAppMessage()}`, '_blank');
     } else {
       handleDownloadPDF().then(() => {
-        window.open(`https://wa.me/${cliente.telefono?.replace(/\D/g, '') || ''}?text=${encodedMessage}`, '_blank');
+        window.open(`https://wa.me/${phone}?text=${getWhatsAppMessage()}`, '_blank');
       });
     }
     setShowShareOptions(false);
@@ -95,61 +108,54 @@ ${profesional.alias ? `\nAlias para transferencia: ${profesional.alias}` : ''}`;
             </div>
             
             {/* Document - A4 */}
-            <div ref={documentRef} className="bg-white border border-slate-200 rounded-lg p-8" style={{ minHeight: 297, aspectRatio: '1/1.414' }}>
+            <div ref={documentRef} className="bg-white border border-slate-200 rounded-lg p-4 md:p-6 overflow-auto" style={{ minHeight: 297 }}>
               {/* Header */}
-              <div className="flex justify-between items-start mb-8">
-                <div>
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex items-center gap-3">
                   {profesional.logo ? (
-                    <img src={profesional.logo} alt="Logo" className="w-16 h-16 object-contain mb-3" />
+                    <img src={profesional.logo} alt="Logo" className="w-10 h-10 object-contain" />
                   ) : (
-                    <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center mb-3">
-                      <span className="material-symbols-outlined text-white text-2xl">bolt</span>
+                    <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                      <span className="material-symbols-outlined text-white text-lg">bolt</span>
                     </div>
                   )}
-                  <h3 className="font-bold text-slate-900 text-lg">{profesional.nombre || 'Tu Nombre'}</h3>
-                  <p className="text-sm text-slate-500">{profesional.profesion}</p>
-                  {profesional.contacto && <p className="text-xs text-slate-400 mt-1">{profesional.contacto}</p>}
-                  {profesional.alias && <p className="text-xs text-primary mt-1">Alias: {profesional.alias}</p>}
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">{profesional.nombre || 'Tu Nombre'}</h3>
+                    <p className="text-xs text-slate-500">{profesional.profesion}</p>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-block px-4 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-full">PRESUPUESTO</span>
-                  <p className="text-xs text-slate-400 mt-2">SQ-{Date.now().toString().slice(-6)}</p>
+                  <span className="inline-block px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded">PRESUPUESTO</span>
+                  <p className="text-[10px] text-slate-400 mt-1">SQ-{Date.now().toString().slice(-6)}</p>
                 </div>
               </div>
 
               {/* Client */}
-              <div className="mb-8 p-4 bg-slate-50 rounded-xl">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Cliente</p>
-                <p className="font-semibold text-slate-900">{cliente.nombre || 'Sin nombre'}</p>
-                {cliente.empresa && <p className="text-sm text-slate-600">{cliente.empresa}</p>}
-                {cliente.telefono && <p className="text-sm text-slate-500">{cliente.telefono}</p>}
-                {cliente.email && <p className="text-sm text-slate-500">{cliente.email}</p>}
-                {cliente.direccion && <p className="text-sm text-slate-500">{cliente.direccion}</p>}
-                {cliente.proyecto && (
-                  <div className="mt-3 pt-3 border-t border-slate-200">
-                    <p className="text-xs text-slate-400 uppercase tracking-wider">Proyecto</p>
-                    <p className="font-medium text-slate-800">{cliente.proyecto}</p>
-                  </div>
-                )}
+              <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Cliente</p>
+                <p className="font-semibold text-slate-900 text-sm">{cliente.nombre || 'Sin nombre'}</p>
+                {cliente.empresa && <p className="text-xs text-slate-600">{cliente.empresa}</p>}
+                {cliente.telefono && <p className="text-xs text-slate-500">{cliente.telefono}</p>}
+                {cliente.proyecto && <p className="text-xs text-primary mt-1"><strong>Proyecto:</strong> {cliente.proyecto}</p>}
               </div>
 
-              {/* Items */}
-              <div className="mb-8">
-                <table className="w-full">
+              {/* Items - Compact Table */}
+              <div className="mb-4">
+                <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b-2 border-slate-900">
-                      <th className="text-left py-2 text-xs font-bold text-slate-900 uppercase">Descripción</th>
-                      <th className="text-right py-2 text-xs font-bold text-slate-900 uppercase">Importe</th>
+                    <tr className="border-b border-slate-300">
+                      <th className="text-left py-1 font-semibold text-slate-700">Descripción</th>
+                      <th className="text-right py-1 font-semibold text-slate-700">Importe</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map(item => (
                       <tr key={item.id} className="border-b border-slate-100">
-                        <td className="py-3 pr-4">
+                        <td className="py-1.5 pr-2">
                           <p className="font-medium text-slate-900">{item.titulo}</p>
-                          {item.descripcion && <p className="text-xs text-slate-500 mt-0.5">{item.descripcion}</p>}
+                          {item.descripcion && <p className="text-[10px] text-slate-500">{item.descripcion}</p>}
                         </td>
-                        <td className="text-right py-3 font-medium text-slate-900">${item.precio.toFixed(2)}</td>
+                        <td className="text-right py-1.5 font-medium text-slate-900">${item.precio.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -157,22 +163,22 @@ ${profesional.alias ? `\nAlias para transferencia: ${profesional.alias}` : ''}`;
               </div>
 
               {/* Totals */}
-              <div className="mb-8">
+              <div className="mb-4">
                 <div className="flex justify-end">
-                  <div className="w-64">
-                    <div className="flex justify-between py-2 text-sm">
+                  <div className="w-40">
+                    <div className="flex justify-between py-1 text-xs">
                       <span className="text-slate-500">Subtotal</span>
                       <span className="font-medium">${subtotal.toFixed(2)}</span>
                     </div>
                     {config.ivaEnabled && (
-                      <div className="flex justify-between py-2 text-sm">
+                      <div className="flex justify-between py-1 text-xs">
                         <span className="text-slate-500">IVA ({config.iva}%)</span>
                         <span className="font-medium">${iva.toFixed(2)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between py-3 px-4 bg-slate-900 -mx-4 -mb-4 rounded-b-xl">
-                      <span className="font-bold text-white">TOTAL</span>
-                      <span className="font-bold text-white text-xl">${total.toFixed(2)}</span>
+                    <div className="flex justify-between py-1.5 px-2 bg-slate-900 -mx-2 text-white rounded">
+                      <span className="font-bold text-xs">TOTAL</span>
+                      <span className="font-bold">${total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -180,26 +186,25 @@ ${profesional.alias ? `\nAlias para transferencia: ${profesional.alias}` : ''}`;
 
               {/* Conditions Footer */}
               {(enabledConditions.length > 0 || config.condicionesCustom) && (
-                <div className="pt-6 border-t border-slate-200">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Condiciones</p>
-                  <ul className="text-xs text-slate-600 space-y-1">
+                <div className="pt-3 border-t border-slate-200 text-xs">
+                  <p className="font-semibold text-slate-500 mb-1">Condiciones:</p>
+                  <ul className="text-slate-600 space-y-0.5">
                     {enabledConditions.map(condition => (
                       <li key={condition.id}>• {condition.label}</li>
                     ))}
-                    {config.condicionesCustom.split('\n').map((line, i) => (
-                      <li key={i}>{line}</li>
+                    {config.condicionesCustom.split('\n').filter(l => l.trim()).map((line, idx) => (
+                      <li key={idx}>{line}</li>
                     ))}
                   </ul>
-                  <p className="text-xs text-slate-400 mt-4">Válido por {config.validez} días</p>
+                  <p className="text-slate-400 mt-2">Válido por {config.validez} días</p>
                 </div>
               )}
 
               {/* Professional Footer */}
-              {profesional.matricula && (
-                <div className="pt-4 mt-4 border-t border-slate-100 text-center">
-                  <p className="text-xs text-slate-400">Matrícula: {profesional.matricula}</p>
-                </div>
-              )}
+              <div className="pt-2 mt-2 border-t border-slate-100 text-center text-[10px] text-slate-400">
+                {profesional.alias && <p>Alias: {profesional.alias}</p>}
+                {profesional.matricula && <p>Mat: {profesional.matricula}</p>}
+              </div>
             </div>
           </Card>
         </div>
@@ -219,11 +224,11 @@ ${profesional.alias ? `\nAlias para transferencia: ${profesional.alias}` : ''}`;
               <div className="relative">
                 <Button variant="whatsapp" fullWidth onClick={() => setShowShareOptions(!showShareOptions)}>
                   <span className="material-symbols-outlined">send</span>
-                  Enviar por WhatsApp
+                  Enviar WhatsApp
                 </Button>
                 
                 {showShareOptions && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-elevated border border-slate-200 overflow-hidden z-10">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-10">
                     <button onClick={() => handleWhatsApp('text')} className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3">
                       <span className="material-symbols-outlined text-green-500">chat</span>
                       <span className="text-sm">Solo texto</span>
@@ -253,7 +258,7 @@ ${profesional.alias ? `\nAlias para transferencia: ${profesional.alias}` : ''}`;
               <span className="material-symbols-outlined text-primary">lightbulb</span>
               <div>
                 <p className="font-medium text-slate-900 text-sm">Consejo</p>
-                <p className="text-xs text-slate-500 mt-1">Envía el PDF por WhatsApp para una presentación profesional.</p>
+                <p className="text-xs text-slate-500 mt-1">El mensaje de WhatsApp incluye todas las condiciones.</p>
               </div>
             </div>
           </Card>
