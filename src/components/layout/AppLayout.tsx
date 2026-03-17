@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
 import { StepProfessional } from '../steps/StepProfessional';
 import { StepClient } from '../steps/StepClient';
@@ -11,33 +11,10 @@ import { Dashboard } from '../steps/Dashboard';
 export const AppLayout: React.FC = () => {
   const { currentStep, nextStep, prevStep, resetQuote } = useQuoteStore();
   const [showDashboard, setShowDashboard] = useState(true);
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
 
   if (currentStep === 0) {
     return <SplashScreen />;
   }
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentStep < 5) {
-        nextStep();
-      } else if (diff < 0 && currentStep > 1) {
-        prevStep();
-      }
-    }
-    touchStartX.current = 0;
-    touchEndX.current = 0;
-  };
 
   const handleClearStep = () => {
     if (confirm('¿Limpiar los datos de este paso?')) {
@@ -95,14 +72,14 @@ export const AppLayout: React.FC = () => {
   // Dashboard View
   if (showDashboard && currentStep === 1) {
     return (
-      <div className="min-h-screen bg-background flex">
-        <aside className="hidden lg:flex lg:w-64 flex-col bg-white border-r border-slate-200">
+      <div className="min-h-screen bg-background-dark flex">
+        <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
           <div className="p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                <span className="material-symbols-outlined text-white text-xl">bolt</span>
+              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+                <span className="material-symbols-outlined text-primary text-xl">description</span>
               </div>
-              <span className="text-xl font-bold text-slate-900 font-display">SwiftQuote</span>
+              <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
             </div>
           </div>
           <nav className="flex-1 px-4 space-y-1">
@@ -112,7 +89,7 @@ export const AppLayout: React.FC = () => {
               { label: 'Clientes', icon: 'group' },
               { label: 'Ajustes', icon: 'settings' },
             ].map((item) => (
-              <a key={item.label} href="#" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${item.active ? 'bg-primary/10 text-primary' : 'text-slate-500 hover:bg-slate-100'}`}>
+              <a key={item.label} href="#" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${item.active ? 'bg-primary/20 text-primary border border-primary/30' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
                 <span className="material-symbols-outlined">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
               </a>
@@ -130,8 +107,8 @@ export const AppLayout: React.FC = () => {
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-slate-200 bg-white">
-            <h1 className="text-lg font-bold text-slate-900 font-display">Dashboard</h1>
+          <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
+            <h1 className="text-lg font-bold text-slate-100 font-display">Dashboard</h1>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">G</div>
             </div>
@@ -145,32 +122,32 @@ export const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background-dark flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 flex-col bg-white border-r border-slate-200">
+      <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
         <div className="p-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-xl">bolt</span>
+            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+              <span className="material-symbols-outlined text-primary text-xl">description</span>
             </div>
-            <span className="text-xl font-bold text-slate-900 font-display">SwiftQuote</span>
+            <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
           </div>
         </div>
         
         <nav className="flex-1 px-4 space-y-1">
-          <button onClick={() => setShowDashboard(true)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-500 hover:bg-slate-100">
+          <button onClick={() => setShowDashboard(true)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
             <span className="material-symbols-outlined">dashboard</span>
             <span className="font-medium">Dashboard</span>
           </button>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-500 hover:bg-slate-100">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
             <span className="material-symbols-outlined">description</span>
             <span className="font-medium">Cotizaciones</span>
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-500 hover:bg-slate-100">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
             <span className="material-symbols-outlined">group</span>
             <span className="font-medium">Clientes</span>
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-500 hover:bg-slate-100">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
             <span className="material-symbols-outlined">settings</span>
             <span className="font-medium">Ajustes</span>
           </a>
@@ -190,16 +167,16 @@ export const AppLayout: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Desktop Header */}
-        <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-slate-200 bg-white">
+        <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <button onClick={handleBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900">
+            <button onClick={handleBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-200">
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
-            <h1 className="text-lg font-bold text-slate-900 font-display">{stepTitles[currentStep]}</h1>
-            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full">Paso {currentStep} de 5</span>
+            <h1 className="text-lg font-bold text-slate-100 font-display">{stepTitles[currentStep]}</h1>
+            <span className="px-2.5 py-1 bg-slate-800 text-slate-400 text-xs font-medium rounded-full border border-slate-700">Paso {currentStep} de 5</span>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={handleClearStep} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+            <button onClick={handleClearStep} className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
               <span className="material-symbols-outlined">delete_sweep</span>
             </button>
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">G</div>
@@ -209,24 +186,21 @@ export const AppLayout: React.FC = () => {
         {/* Mobile Container */}
         <div 
           className="flex-1 lg:max-w-4xl lg:mx-auto w-full flex flex-col"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
+          >
           {/* Mobile Header */}
-          <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3">
+          <header className="lg:hidden bg-slate-900/80 backdrop-blur-md border-b border-white/5 px-4 py-3">
             <div className="flex items-center justify-between mb-3">
-              <button onClick={handleBack} className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+              <button onClick={handleBack} className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
                 <span className="material-symbols-outlined">arrow_back</span>
               </button>
-              <h1 className="text-base font-bold text-slate-900 font-display">{stepTitles[currentStep]}</h1>
-              <button onClick={handleClearStep} className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+              <h1 className="text-base font-bold text-slate-100 font-display">{stepTitles[currentStep]}</h1>
+              <button onClick={handleClearStep} className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
                 <span className="material-symbols-outlined text-sm">delete_sweep</span>
               </button>
             </div>
             <div className="flex items-center justify-center gap-1.5">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className={`h-1.5 rounded-full transition-all ${i === currentStep ? 'w-6 bg-primary' : i < currentStep ? 'w-2 bg-primary' : 'w-2 bg-slate-200'}`} />
+                <div key={i} className={`h-1.5 rounded-full transition-all ${i === currentStep ? 'w-6 bg-primary' : i < currentStep ? 'w-2 bg-primary' : 'w-2 bg-slate-700'}`} />
               ))}
             </div>
           </header>
@@ -235,13 +209,13 @@ export const AppLayout: React.FC = () => {
           <div className="hidden lg:flex items-center justify-center gap-3 py-6 px-8">
             {stepTitles.slice(1).map((title, i) => (
               <React.Fragment key={i}>
-                <div className={`flex items-center gap-2 ${currentStep === i + 1 ? 'text-primary' : currentStep > i + 1 ? 'text-green-500' : 'text-slate-400'}`}>
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${currentStep > i + 1 ? 'bg-green-500 text-white' : currentStep === i + 1 ? 'bg-primary text-white' : 'bg-slate-200 text-slate-500'}`}>
+                <div className={`flex items-center gap-2 ${currentStep === i + 1 ? 'text-primary' : currentStep > i + 1 ? 'text-green-500' : 'text-slate-500'}`}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${currentStep > i + 1 ? 'bg-green-500 text-white' : currentStep === i + 1 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-800 text-slate-500 border border-slate-700'}`}>
                     {currentStep > i + 1 ? <span className="material-symbols-outlined text-sm">check</span> : i + 1}
                   </div>
                   <span className="text-sm font-medium">{title}</span>
                 </div>
-                {i < 4 && <div className={`flex-1 h-0.5 rounded ${currentStep > i + 1 ? 'bg-green-500' : 'bg-slate-200'}`} style={{ maxWidth: 40 }} />}
+                {i < 4 && <div className={`flex-1 h-0.5 rounded ${currentStep > i + 1 ? 'bg-green-500' : 'bg-slate-700'}`} style={{ maxWidth: 40 }} />}
               </React.Fragment>
             ))}
           </div>
@@ -252,22 +226,22 @@ export const AppLayout: React.FC = () => {
           </main>
 
           {/* Mobile Bottom Navigation */}
-          <footer className="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-t border-slate-200">
+          <footer className="lg:hidden flex items-center justify-between px-4 py-3 bg-slate-900/80 backdrop-blur-md border-t border-white/5">
             <button 
               onClick={handleBack} 
               disabled={currentStep === 1}
-              className={`flex items-center gap-1 px-3 py-2 rounded-lg ${currentStep === 1 ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`flex items-center gap-1 px-3 py-2 rounded-lg ${currentStep === 1 ? 'text-slate-600' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
             >
               <span className="material-symbols-outlined text-lg">arrow_back</span>
               <span className="text-sm">Atrás</span>
             </button>
             
-            <span className="text-xs text-slate-400">Swipe ← →</span>
+            <span className="text-xs text-slate-500">Swipe ← →</span>
             
             <button 
               onClick={nextStep}
               disabled={currentStep === 5}
-              className={`flex items-center gap-1 px-4 py-2 bg-primary text-white rounded-lg ${currentStep === 5 ? 'opacity-50' : ''}`}
+              className={`flex items-center gap-1 px-4 py-2 bg-primary text-white rounded-lg ${currentStep === 5 ? 'opacity-50' : 'hover:bg-blue-500'}`}
             >
               <span className="text-sm font-medium">{currentStep === 5 ? 'Fin' : 'Siguiente'}</span>
               <span className="material-symbols-outlined text-lg">arrow_forward</span>
@@ -275,17 +249,17 @@ export const AppLayout: React.FC = () => {
           </footer>
 
           {/* Desktop Footer */}
-          <footer className="hidden lg:flex items-center justify-between p-6 border-t border-slate-200 bg-white">
-            <button onClick={handleBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <footer className="hidden lg:flex items-center justify-between p-6 border-t border-white/5 bg-slate-900/30 backdrop-blur-md">
+            <button onClick={handleBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-200">
               <span className="material-symbols-outlined">arrow_back</span>
               <span>Atrás</span>
             </button>
             <div className="flex items-center gap-3">
-              <button onClick={handleClearStep} className="flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg">
+              <button onClick={handleClearStep} className="flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                 <span className="material-symbols-outlined">delete_sweep</span>
                 <span>Limpiar</span>
               </button>
-              <button onClick={nextStep} className={`flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary-dark ${currentStep === 5 ? 'opacity-50' : ''}`}>
+              <button onClick={nextStep} className={`flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-blue-500 hover:shadow-lg hover:shadow-primary/20 ${currentStep === 5 ? 'opacity-50' : ''}`}>
                 <span>{currentStep === 5 ? 'Finalizar' : 'Siguiente'}</span>
                 <span className="material-symbols-outlined">arrow_forward</span>
               </button>
@@ -293,14 +267,14 @@ export const AppLayout: React.FC = () => {
           </footer>
 
           {/* Mobile Bottom Tab Bar */}
-          <nav className="lg:hidden flex border-t border-slate-200 bg-white px-1 py-1">
+          <nav className="lg:hidden flex border-t border-white/5 bg-slate-900/80 backdrop-blur-md px-1 py-1">
             {[
               { icon: 'home', label: 'Inicio', action: () => { setShowDashboard(true); } },
               { icon: 'add_circle', label: 'Nueva', active: true },
               { icon: 'group', label: 'Clientes' },
               { icon: 'settings', label: 'Ajustes' }
             ].map((item) => (
-              <button key={item.label} onClick={item.action} className={`flex-1 flex flex-col items-center gap-0.5 py-2 ${item.active ? 'text-primary' : 'text-slate-400'}`}>
+              <button key={item.label} onClick={item.action} className={`flex-1 flex flex-col items-center gap-0.5 py-2 ${item.active ? 'text-primary' : 'text-slate-500'}`}>
                 <span className="material-symbols-outlined text-xl">{item.icon}</span>
                 <span className="text-[10px] font-medium">{item.label}</span>
               </button>

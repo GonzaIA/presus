@@ -133,12 +133,12 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
         
         <div className="flex gap-1">
           {/* Zoom Controls */}
-          <div className="flex items-center gap-1 bg-slate-100 rounded-lg px-2">
-            <button onClick={() => adjustZoom(-10)} className="p-1 hover:bg-slate-200 rounded">
+          <div className="flex items-center gap-1 bg-slate-800 rounded-lg px-2 border border-slate-700">
+            <button onClick={() => adjustZoom(-10)} className="p-1 hover:bg-slate-700 rounded text-slate-400">
               <span className="material-symbols-outlined text-sm">remove</span>
             </button>
-            <span className="text-xs w-10 text-center">{zoom}%</span>
-            <button onClick={() => adjustZoom(10)} className="p-1 hover:bg-slate-200 rounded">
+            <span className="text-xs w-10 text-center text-slate-400">{zoom}%</span>
+            <button onClick={() => adjustZoom(10)} className="p-1 hover:bg-slate-700 rounded text-slate-400">
               <span className="material-symbols-outlined text-sm">add</span>
             </button>
           </div>
@@ -150,13 +150,13 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
             </Button>
             
             {showShareOptions && (
-              <div className="absolute top-full right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden z-20">
-                <button onClick={() => handleWhatsApp('text')} className="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-xs">
-                  <span className="material-symbols-outlined text-green-500 text-sm">chat</span>
+              <div className="absolute top-full right-0 mt-1 w-36 bg-slate-800 rounded-lg shadow-lg border border-slate-700 overflow-hidden z-20">
+                <button onClick={() => handleWhatsApp('text')} className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center gap-2 text-xs text-slate-200">
+                  <span className="material-symbols-outlined text-green-400 text-sm">chat</span>
                   Solo texto
                 </button>
-                <button onClick={() => handleWhatsApp('pdf')} className="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-xs">
-                  <span className="material-symbols-outlined text-red-500 text-sm">picture_as_pdf</span>
+                <button onClick={() => handleWhatsApp('pdf')} className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center gap-2 text-xs text-slate-200">
+                  <span className="material-symbols-outlined text-red-400 text-sm">picture_as_pdf</span>
                   Con PDF
                 </button>
               </div>
@@ -174,7 +174,7 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
       </div>
 
       {/* Document Preview with Zoom */}
-      <div className="overflow-auto bg-slate-100 rounded-lg p-2 max-h-[70vh]">
+      <div className="overflow-auto bg-slate-900 rounded-lg p-2 max-h-[70vh] border border-slate-700">
         <div 
           ref={documentRef}
           className="bg-white mx-auto transition-transform"

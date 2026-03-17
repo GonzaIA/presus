@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
 import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
 
 interface DashboardProps {
   onNewQuote: () => void;
@@ -19,10 +20,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewQuote }) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'text-green-600 bg-green-100';
-      case 'pending': return 'text-yellow-600 bg-yellow-100';
-      case 'rejected': return 'text-red-600 bg-red-100';
-      default: return 'text-slate-600 bg-slate-100';
+      case 'approved': return 'text-green-400 bg-green-500/10 border border-green-500/20';
+      case 'pending': return 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/20';
+      case 'rejected': return 'text-red-400 bg-red-500/10 border border-red-500/20';
+      default: return 'text-slate-400 bg-slate-800 border border-slate-700';
     }
   };
 
@@ -39,10 +40,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewQuote }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 font-display">Mis Cotizaciones</h2>
+          <h2 className="text-2xl font-bold text-slate-100 font-display">Mis Cotizaciones</h2>
           <p className="text-slate-500">{quotes.length} presupuestos guardados</p>
         </div>
-        <button onClick={onNewQuote} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary-dark transition-colors">
+        <button onClick={onNewQuote} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-blue-500 transition-colors shadow-lg shadow-primary/20">
           <span className="material-symbols-outlined">add</span>
           Nuevo
         </button>
@@ -50,20 +51,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewQuote }) => {
 
       {quotes.length === 0 ? (
         <Card className="text-center py-12">
-          <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">description</span>
-          <h3 className="text-lg font-semibold text-slate-700 mb-2">Sin cotizaciones</h3>
+          <span className="material-symbols-outlined text-5xl text-slate-600 mb-4">description</span>
+          <h3 className="text-lg font-semibold text-slate-300 mb-2">Sin cotizaciones</h3>
           <p className="text-slate-500 text-sm mb-4">Crea tu primera cotización</p>
-          <button onClick={onNewQuote} className="px-5 py-2.5 bg-primary text-white rounded-xl font-medium">
+          <Button onClick={onNewQuote}>
             Crear Cotización
-          </button>
+          </Button>
         </Card>
       ) : (
         <div className="grid gap-4">
           {quotes.map(quote => (
-            <Card key={quote.id} className="hover:shadow-soft transition-shadow">
+            <Card key={quote.id} className="hover:bg-slate-800/80 transition-colors">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h4 className="font-semibold text-slate-900">{quote.cliente.proyecto || 'Sin proyecto'}</h4>
+                  <h4 className="font-semibold text-slate-100">{quote.cliente.proyecto || 'Sin proyecto'}</h4>
                   <p className="text-sm text-slate-500">{quote.cliente.nombre || 'Sin cliente'}</p>
                 </div>
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(quote.status)}`}>
@@ -73,23 +74,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewQuote }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div>
-                    <p className="text-xs text-slate-400">Fecha</p>
-                    <p className="text-sm font-medium text-slate-700">{formatDate(quote.createdAt)}</p>
+                    <p className="text-xs text-slate-500">Fecha</p>
+                    <p className="text-sm font-medium text-slate-300">{formatDate(quote.createdAt)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">Items</p>
-                    <p className="text-sm font-medium text-slate-700">{quote.items.length}</p>
+                    <p className="text-xs text-slate-500">Items</p>
+                    <p className="text-sm font-medium text-slate-300">{quote.items.length}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">Total</p>
+                    <p className="text-xs text-slate-500">Total</p>
                     <p className="text-lg font-bold text-primary">${quote.total.toFixed(2)}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => loadQuote(quote)} className="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-lg">
+                  <button onClick={() => loadQuote(quote)} className="p-2 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
                     <span className="material-symbols-outlined">visibility</span>
                   </button>
-                  <button onClick={() => deleteQuote(quote.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                  <button onClick={() => deleteQuote(quote.id)} className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                     <span className="material-symbols-outlined">delete</span>
                   </button>
                 </div>

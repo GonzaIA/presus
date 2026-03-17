@@ -21,32 +21,32 @@ export const Input: React.FC<InputProps> = ({
   ...props 
 }) => {
   const baseClasses = `
-    w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white
-    text-slate-800 placeholder-slate-400 text-sm
-    focus:border-primary focus:outline-none focus:ring-0
+    w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-800/50
+    text-slate-100 placeholder-slate-500 text-sm
+    focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20
     transition-colors duration-200
   `;
 
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-xs font-medium text-slate-600 mb-2">
+        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
           {label}
         </label>
       )}
       {asTextarea ? (
         <textarea
           rows={rows}
-          className={`${baseClasses} resize-none ${error ? 'border-red-400' : ''}`}
+          className={`${baseClasses} resize-none ${error ? 'border-red-500' : ''}`}
           {...props as React.TextareaHTMLAttributes<HTMLTextAreaElement>}
         />
       ) : (
         <input
-          className={`${baseClasses} ${error ? 'border-red-400' : ''}`}
+          className={`${baseClasses} ${error ? 'border-red-500' : ''}`}
           {...props as React.InputHTMLAttributes<HTMLInputElement>}
         />
       )}
-      {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
     </div>
   );
 };
