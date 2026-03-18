@@ -256,6 +256,10 @@ export const AppLayout: React.FC = () => {
         {/* Desktop Header */}
         <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
           <div className="flex items-center gap-4">
+            <button onClick={() => handleNavigate('dashboard')} className="flex items-center gap-2 text-slate-400 hover:text-slate-200">
+              <span className="material-symbols-outlined">home</span>
+              <span>Inicio</span>
+            </button>
             <button onClick={handleBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-200">
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
@@ -276,8 +280,8 @@ export const AppLayout: React.FC = () => {
           {/* Mobile Header */}
           <header className="lg:hidden bg-slate-900/80 backdrop-blur-md border-b border-white/5 px-4 py-3">
             <div className="flex items-center justify-between mb-3">
-              <button onClick={handleBack} className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
-                <span className="material-symbols-outlined">arrow_back</span>
+              <button onClick={() => handleNavigate('dashboard')} className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
+                <span className="material-symbols-outlined text-lg">home</span>
               </button>
               <h1 className="text-base font-bold text-slate-100 font-display">{stepTitles[currentStep]}</h1>
               <button onClick={handleClearStep} className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
@@ -321,8 +325,6 @@ export const AppLayout: React.FC = () => {
               <span className="material-symbols-outlined text-lg">arrow_back</span>
               <span className="text-sm">Atrás</span>
             </button>
-            
-            <span className="text-xs text-slate-500">Swipe ← →</span>
             
             <button 
               onClick={nextStep}

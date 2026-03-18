@@ -11,12 +11,10 @@ export const StepItems: React.FC = () => {
   const [newItem, setNewItem] = useState({ titulo: '', descripcion: '', precio: '' });
 
   const handleAddItem = () => {
-    if (newItem.titulo && newItem.precio) {
-      addItem();
-      const lastItem = items[items.length - 1];
-      updateItem(lastItem.id, {
-        titulo: newItem.titulo,
-        descripcion: newItem.descripcion,
+    if (newItem.titulo.trim() && newItem.precio) {
+      addItem({
+        titulo: newItem.titulo.trim(),
+        descripcion: newItem.descripcion.trim(),
         precio: parseFloat(newItem.precio) || 0
       });
       setNewItem({ titulo: '', descripcion: '', precio: '' });
@@ -130,7 +128,16 @@ export const StepItems: React.FC = () => {
               </div>
               {config.ivaEnabled && (
                 <div className="flex items-center gap-2">
-                  <input type="number" value={config.iva} onChange={e => setConfig({ iva: parseFloat(e.target.value) || 0 })} className="w-16 px-2 py-1 text-center text-sm bg-slate-800 border border-slate-700 rounded text-slate-200" />
+                  <input 
+                    type="number" 
+                    inputMode="decimal"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={config.iva} 
+                    onChange={e => setConfig({ iva: parseFloat(e.target.value) || 0 })}
+                    className="w-16 px-2 py-1 text-center text-sm bg-slate-800 border border-slate-700 rounded text-slate-200"
+                  />
                   <span className="text-sm text-slate-500">% IVA</span>
                 </div>
               )}

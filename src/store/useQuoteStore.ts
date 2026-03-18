@@ -44,7 +44,7 @@ interface QuoteActions {
   setProfessional: (data: Partial<Professional>) => void;
   setClient: (data: Partial<Client>) => void;
   setItems: (items: Item[]) => void;
-  addItem: () => void;
+  addItem: (data?: { titulo: string; descripcion: string; precio: number }) => void;
   removeItem: (id: number) => void;
   updateItem: (id: number, data: Partial<Item>) => void;
   setConfig: (data: Partial<Config>) => void;
@@ -78,11 +78,16 @@ export const useQuoteStore = create<QuoteState & QuoteActions>()(
 
       setItems: (items) => set({ items }),
 
-      addItem: () => {
+      addItem: (data?: { titulo: string; descripcion: string; precio: number }) => {
         const { items } = get();
         const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
         set({
-          items: [...items, { id: newId, titulo: '', descripcion: '', precio: 0 }]
+          items: [...items, { 
+            id: newId, 
+            titulo: data?.titulo || '', 
+            descripcion: data?.descripcion || '', 
+            precio: data?.precio || 0 
+          }]
         });
       },
 
