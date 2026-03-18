@@ -234,7 +234,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewQuote, onLoadQuote })
                     
                     <div className="relative">
                       <button
-                        onClick={() => setOpenStatusMenu(openStatusMenu === quote.id ? null : quote.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenStatusMenu(openStatusMenu === quote.id ? null : quote.id);
+                        }}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${statusConfig.color} hover:scale-105`}
                       >
                         <span className="material-symbols-outlined text-sm">{statusConfig.icon}</span>
@@ -243,23 +246,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewQuote, onLoadQuote })
                       </button>
                       
                       {openStatusMenu === quote.id && (
-                        <div className="absolute top-full right-0 mt-2 w-40 bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2">
+                        <div 
+                          className="absolute top-full right-0 mt-2 w-44 bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden z-[60]"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button
-                            onClick={() => handleStatusChange(quote.id, 'pending')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStatusChange(quote.id, 'pending');
+                            }}
                             className="w-full px-4 py-2.5 text-left hover:bg-yellow-500/20 flex items-center gap-3 transition-colors"
                           >
                             <span className="material-symbols-outlined text-yellow-400 text-lg">schedule</span>
                             <span className="text-sm text-slate-300">Pendiente</span>
                           </button>
                           <button
-                            onClick={() => handleStatusChange(quote.id, 'approved')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStatusChange(quote.id, 'approved');
+                            }}
                             className="w-full px-4 py-2.5 text-left hover:bg-green-500/20 flex items-center gap-3 transition-colors"
                           >
                             <span className="material-symbols-outlined text-green-400 text-lg">check_circle</span>
                             <span className="text-sm text-slate-300">Aprobado</span>
                           </button>
                           <button
-                            onClick={() => handleStatusChange(quote.id, 'rejected')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStatusChange(quote.id, 'rejected');
+                            }}
                             className="w-full px-4 py-2.5 text-left hover:bg-red-500/20 flex items-center gap-3 transition-colors"
                           >
                             <span className="material-symbols-outlined text-red-400 text-lg">cancel</span>
@@ -316,8 +331,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewQuote, onLoadQuote })
 
       {openStatusMenu && (
         <div
-          className="fixed inset-0 z-10"
-          onClick={() => setOpenStatusMenu(null)}
+          className="fixed inset-0 z-50"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenStatusMenu(null);
+          }}
         />
       )}
     </div>

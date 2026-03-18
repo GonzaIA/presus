@@ -78,6 +78,7 @@ export const AppLayout: React.FC = () => {
     setCurrentView(view);
     if (view === 'dashboard') {
       setShowDashboard(true);
+      goToStep(1);
     } else {
       setShowDashboard(false);
       if (view === 'quote') {
