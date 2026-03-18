@@ -92,41 +92,29 @@ export const AppLayout: React.FC = () => {
       <div className="min-h-screen bg-background-dark flex">
         <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
           <div className="p-6">
-            <div className="flex items-center gap-3">
+            <button onClick={() => handleNavigate('dashboard')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
                 <span className="material-symbols-outlined text-primary text-xl">description</span>
               </div>
               <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
-            </div>
+            </button>
           </div>
           <nav className="flex-1 px-4 space-y-1">
             {[
-              { label: 'Dashboard', icon: 'dashboard', view: 'dashboard' as ViewType },
-              { label: 'Cotizaciones', icon: 'description', view: 'quote' as ViewType },
-              { label: 'Clientes', icon: 'group', view: 'dashboard' as ViewType },
-              { label: 'Ajustes', icon: 'settings', view: 'dashboard' as ViewType },
+              { label: 'Inicio', icon: 'home', view: 'dashboard' as ViewType },
+              { label: 'Nueva', icon: 'add_circle', view: 'quote' as ViewType },
+              { label: 'Info', icon: 'info', view: 'info' as ViewType },
             ].map((item) => (
-              <button key={item.label} onClick={() => handleNavigate(item.view)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+              <button 
+                key={item.label} 
+                onClick={() => handleNavigate(item.view)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${currentView === item.view ? 'bg-primary/20 text-primary border border-primary/30' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+              >
                 <span className="material-symbols-outlined">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
               </button>
             ))}
           </nav>
-          <div className="p-4">
-            <button onClick={() => handleNavigate('info')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors bg-primary/20 text-primary border border-primary/30">
-              <span className="material-symbols-outlined">info</span>
-              <span className="font-medium">Info</span>
-            </button>
-          </div>
-          <div className="p-4 mx-4 mb-4">
-            <div className="bg-gradient-to-br from-primary to-accent p-4 rounded-2xl text-white">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined">diamond</span>
-                <span className="font-bold">Plan Pro</span>
-              </div>
-              <p className="text-xs text-white/80">Funciones ilimitadas</p>
-            </div>
-          </div>
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0">
@@ -136,9 +124,6 @@ export const AppLayout: React.FC = () => {
                 <span className="material-symbols-outlined">arrow_back</span>
               </button>
               <h1 className="text-lg font-bold text-slate-100 font-display">Info</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">G</div>
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
@@ -151,7 +136,6 @@ export const AppLayout: React.FC = () => {
           {[
             { icon: 'home', label: 'Inicio', view: 'dashboard' as ViewType },
             { icon: 'add_circle', label: 'Nueva', view: 'quote' as ViewType },
-            { icon: 'group', label: 'Clientes' },
             { icon: 'info', label: 'Info', view: 'info' as ViewType, active: currentView === 'info' }
           ].map((item) => (
             <button 
@@ -174,52 +158,37 @@ export const AppLayout: React.FC = () => {
       <div className="min-h-screen bg-background-dark flex pb-16 lg:pb-0">
         <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
           <div className="p-6">
-            <div className="flex items-center gap-3">
+            <button onClick={() => handleNavigate('dashboard')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
                 <span className="material-symbols-outlined text-primary text-xl">description</span>
               </div>
               <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
-            </div>
+            </button>
           </div>
-          <nav className="flex-1 px-4 space-y-1">
+        <nav className="flex-1 px-4 space-y-1">
             {[
-              { label: 'Dashboard', icon: 'dashboard', view: 'dashboard' as ViewType },
-              { label: 'Cotizaciones', icon: 'description', view: 'quote' as ViewType },
-              { label: 'Clientes', icon: 'group', view: 'dashboard' as ViewType },
-              { label: 'Ajustes', icon: 'settings', view: 'dashboard' as ViewType },
+              { label: 'Inicio', icon: 'home', view: 'dashboard' as ViewType },
+              { label: 'Nueva', icon: 'add_circle', view: 'quote' as ViewType },
+              { label: 'Info', icon: 'info', view: 'info' as ViewType },
             ].map((item) => (
-              <button key={item.label} onClick={() => handleNavigate(item.view)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+              <button 
+                key={item.label} 
+                onClick={() => handleNavigate(item.view)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${currentView === item.view ? 'bg-primary/20 text-primary border border-primary/30' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+              >
                 <span className="material-symbols-outlined">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
               </button>
             ))}
           </nav>
-          <div className="p-4">
-            <button onClick={() => handleNavigate('info')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
-              <span className="material-symbols-outlined">info</span>
-              <span className="font-medium">Info</span>
-            </button>
-          </div>
-          <div className="p-4 mx-4 mb-4">
-            <div className="bg-gradient-to-br from-primary to-accent p-4 rounded-2xl text-white">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined">diamond</span>
-                <span className="font-bold">Plan Pro</span>
-              </div>
-              <p className="text-xs text-white/80">Funciones ilimitadas</p>
-            </div>
-          </div>
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0">
           <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
             <h1 className="text-lg font-bold text-slate-100 font-display">Dashboard</h1>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">G</div>
-            </div>
           </header>
           <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-            <Dashboard onNewQuote={() => setShowDashboard(false)} />
+            <Dashboard onNewQuote={() => setShowDashboard(false)} onLoadQuote={() => setShowDashboard(false)} />
           </main>
         </div>
 
@@ -228,7 +197,6 @@ export const AppLayout: React.FC = () => {
           {[
             { icon: 'home', label: 'Inicio', view: 'dashboard' as ViewType, active: true },
             { icon: 'add_circle', label: 'Nueva', view: 'quote' as ViewType },
-            { icon: 'group', label: 'Clientes' },
             { icon: 'info', label: 'Info', view: 'info' as ViewType }
           ].map((item) => (
             <button 
@@ -250,46 +218,37 @@ export const AppLayout: React.FC = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
         <div className="p-6">
-          <div className="flex items-center gap-3">
+          <button onClick={() => handleNavigate('dashboard')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
               <span className="material-symbols-outlined text-primary text-xl">description</span>
             </div>
             <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
-          </div>
+          </button>
         </div>
         
         <nav className="flex-1 px-4 space-y-1">
-          <button onClick={() => handleNavigate('dashboard')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
-            <span className="material-symbols-outlined">dashboard</span>
-            <span className="font-medium">Dashboard</span>
+          <button 
+            onClick={() => handleNavigate('dashboard')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${currentView === 'dashboard' ? 'bg-primary/20 text-primary border border-primary/30' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+          >
+            <span className="material-symbols-outlined">home</span>
+            <span className="font-medium">Inicio</span>
           </button>
-          <button onClick={() => handleNavigate('quote')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
-            <span className="material-symbols-outlined">description</span>
-            <span className="font-medium">Cotizaciones</span>
+          <button 
+            onClick={() => handleNavigate('quote')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${currentView === 'quote' ? 'bg-primary/20 text-primary border border-primary/30' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+          >
+            <span className="material-symbols-outlined">add_circle</span>
+            <span className="font-medium">Nueva</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
-            <span className="material-symbols-outlined">group</span>
-            <span className="font-medium">Clientes</span>
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
-            <span className="material-symbols-outlined">settings</span>
-            <span className="font-medium">Ajustes</span>
-          </button>
-          <button onClick={() => handleNavigate('info')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+          <button 
+            onClick={() => handleNavigate('info')}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5"
+          >
             <span className="material-symbols-outlined">info</span>
             <span className="font-medium">Info</span>
           </button>
         </nav>
-
-        <div className="p-4 mx-4 mb-4">
-          <div className="bg-gradient-to-br from-primary to-accent p-4 rounded-2xl text-white">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined">diamond</span>
-              <span className="font-bold">Plan Pro</span>
-            </div>
-            <p className="text-xs text-white/80">Funciones ilimitadas</p>
-          </div>
-        </div>
       </aside>
 
       {/* Main Content */}
@@ -303,11 +262,10 @@ export const AppLayout: React.FC = () => {
             <h1 className="text-lg font-bold text-slate-100 font-display">{stepTitles[currentStep]}</h1>
             <span className="px-2.5 py-1 bg-slate-800 text-slate-400 text-xs font-medium rounded-full border border-slate-700">Paso {currentStep} de 5</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <button onClick={handleClearStep} className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
               <span className="material-symbols-outlined">delete_sweep</span>
             </button>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">G</div>
           </div>
         </header>
 
@@ -399,7 +357,6 @@ export const AppLayout: React.FC = () => {
             {[
               { icon: 'home', label: 'Inicio', view: 'dashboard' as ViewType },
               { icon: 'add_circle', label: 'Nueva', view: 'quote' as ViewType },
-              { icon: 'group', label: 'Clientes' },
               { icon: 'info', label: 'Info', view: 'info' as ViewType }
             ].map((item) => (
               <button 

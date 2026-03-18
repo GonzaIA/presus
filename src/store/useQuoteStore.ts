@@ -54,6 +54,7 @@ interface QuoteActions {
   goToStep: (step: number) => void;
   saveQuote: () => void;
   deleteQuote: (id: string) => void;
+  updateQuoteStatus: (id: string, status: Quote['status']) => void;
   loadQuote: (quote: Quote) => void;
   resetQuote: () => void;
   getTotal: () => number;
@@ -153,6 +154,15 @@ export const useQuoteStore = create<QuoteState & QuoteActions>()(
       deleteQuote: (id) => {
         const { quotes } = get();
         set({ quotes: quotes.filter(q => q.id !== id) });
+      },
+
+      updateQuoteStatus: (id, status) => {
+        const { quotes } = get();
+        set({
+          quotes: quotes.map(q =>
+            q.id === id ? { ...q, status } : q
+          )
+        });
       },
 
       loadQuote: (quote) => {

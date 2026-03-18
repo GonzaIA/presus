@@ -47,7 +47,7 @@ export interface Quote {
   config: Config;
   total: number;
   createdAt: string;
-  status: 'draft' | 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected';
 }
 
 export interface QuoteState {
