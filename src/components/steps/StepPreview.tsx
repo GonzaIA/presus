@@ -43,7 +43,6 @@ export const StepPreview: React.FC = () => {
       const pdf = html2pdf().set(opt).from(element);
       await pdf.save();
       
-      // Open PDF in new tab after save
       const blob = await pdf.output('blob');
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
@@ -55,7 +54,34 @@ export const StepPreview: React.FC = () => {
     }
   };
 
-  const handleWhatsApp = (type: 'text' | 'pdf') => {
+  const handleDownloadImage = async () => {
+    if (!documentRef.current) return;
+    setIsGenerating(true);
+    
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const element = documentRef.current;
+      
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      
+      const link = document.createElement('a');
+      link.download = `presupuesto-${cliente.nombre || 'cliente'}-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      console.error('Error generating image:', error);
+      alert('Error al generar imagen');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleWhatsApp = (type: 'text' | 'image') => {
     const condiciones = [
       ...enabledConditions.map(c => c.label),
       ...customConditions
@@ -105,7 +131,7 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
     if (type === 'text') {
       window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
     } else {
-      handleDownloadPDF().then(() => {
+      handleDownloadImage().then(() => {
         setTimeout(() => {
           window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
         }, 1500);
@@ -155,13 +181,17 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
                   <span className="material-symbols-outlined text-green-400 text-sm">chat</span>
                   Solo texto
                 </button>
-                <button onClick={() => handleWhatsApp('pdf')} className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center gap-2 text-xs text-slate-200">
-                  <span className="material-symbols-outlined text-red-400 text-sm">picture_as_pdf</span>
-                  Con PDF
+                <button onClick={() => handleWhatsApp('image')} className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center gap-2 text-xs text-slate-200">
+                  <span className="material-symbols-outlined text-blue-400 text-sm">image</span>
+                  Con Imagen
                 </button>
               </div>
             )}
           </div>
+
+          <Button variant="secondary" onClick={handleDownloadImage} disabled={isGenerating} className="h-9 text-xs px-3">
+            <span className="material-symbols-outlined text-sm">image</span>
+          </Button>
 
           <Button variant="secondary" onClick={handleDownloadPDF} disabled={isGenerating} className="h-9 text-xs px-3">
             <span className="material-symbols-outlined text-sm">download</span>

@@ -7,10 +7,14 @@ import { StepNotes } from '../steps/StepNotes';
 import { StepPreview } from '../steps/StepPreview';
 import { SplashScreen } from '../steps/SplashScreen';
 import { Dashboard } from '../steps/Dashboard';
+import { InfoScreen } from '../steps/InfoScreen';
+
+type ViewType = 'dashboard' | 'quote' | 'info';
 
 export const AppLayout: React.FC = () => {
-  const { currentStep, nextStep, prevStep, resetQuote } = useQuoteStore();
+  const { currentStep, nextStep, prevStep, resetQuote, goToStep } = useQuoteStore();
   const [showDashboard, setShowDashboard] = useState(true);
+  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
 
   if (currentStep === 0) {
     return <SplashScreen />;
@@ -64,13 +68,26 @@ export const AppLayout: React.FC = () => {
   const handleBack = () => {
     if (currentStep === 1) {
       setShowDashboard(true);
+      setCurrentView('dashboard');
     } else {
       prevStep();
     }
   };
 
-  // Dashboard View
-  if (showDashboard && currentStep === 1) {
+  const handleNavigate = (view: ViewType) => {
+    setCurrentView(view);
+    if (view === 'dashboard') {
+      setShowDashboard(true);
+    } else {
+      setShowDashboard(false);
+      if (view === 'quote') {
+        goToStep(1);
+      }
+    }
+  };
+
+  // Info View
+  if (currentView === 'info') {
     return (
       <div className="min-h-screen bg-background-dark flex">
         <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
@@ -84,18 +101,106 @@ export const AppLayout: React.FC = () => {
           </div>
           <nav className="flex-1 px-4 space-y-1">
             {[
-              { label: 'Dashboard', icon: 'dashboard', active: true },
-              { label: 'Cotizaciones', icon: 'description' },
-              { label: 'Clientes', icon: 'group' },
-              { label: 'Ajustes', icon: 'settings' },
+              { label: 'Dashboard', icon: 'dashboard', view: 'dashboard' as ViewType },
+              { label: 'Cotizaciones', icon: 'description', view: 'quote' as ViewType },
+              { label: 'Clientes', icon: 'group', view: 'dashboard' as ViewType },
+              { label: 'Ajustes', icon: 'settings', view: 'dashboard' as ViewType },
             ].map((item) => (
-              <a key={item.label} href="#" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${item.active ? 'bg-primary/20 text-primary border border-primary/30' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+              <button key={item.label} onClick={() => handleNavigate(item.view)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
                 <span className="material-symbols-outlined">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
-              </a>
+              </button>
             ))}
           </nav>
           <div className="p-4">
+            <button onClick={() => handleNavigate('info')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors bg-primary/20 text-primary border border-primary/30">
+              <span className="material-symbols-outlined">info</span>
+              <span className="font-medium">Info</span>
+            </button>
+          </div>
+          <div className="p-4 mx-4 mb-4">
+            <div className="bg-gradient-to-br from-primary to-accent p-4 rounded-2xl text-white">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined">diamond</span>
+                <span className="font-bold">Plan Pro</span>
+              </div>
+              <p className="text-xs text-white/80">Funciones ilimitadas</p>
+            </div>
+          </div>
+        </aside>
+
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
+            <div className="flex items-center gap-4">
+              <button onClick={() => handleNavigate('dashboard')} className="flex items-center gap-2 text-slate-400 hover:text-slate-200">
+                <span className="material-symbols-outlined">arrow_back</span>
+              </button>
+              <h1 className="text-lg font-bold text-slate-100 font-display">Info</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">G</div>
+            </div>
+          </header>
+          <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+            <InfoScreen />
+          </main>
+        </div>
+
+        {/* Mobile Bottom Tab Bar */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 flex border-t border-white/5 bg-slate-900/95 backdrop-blur-md px-1 py-1 z-50">
+          {[
+            { icon: 'home', label: 'Inicio', view: 'dashboard' as ViewType },
+            { icon: 'add_circle', label: 'Nueva', view: 'quote' as ViewType },
+            { icon: 'group', label: 'Clientes' },
+            { icon: 'info', label: 'Info', view: 'info' as ViewType, active: currentView === 'info' }
+          ].map((item) => (
+            <button 
+              key={item.label} 
+              onClick={() => item.view && handleNavigate(item.view)}
+              className={`flex-1 flex flex-col items-center gap-0.5 py-2 ${(item as { active?: boolean }).active ? 'text-primary' : 'text-slate-500'}`}
+            >
+              <span className="material-symbols-outlined text-xl">{item.icon}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+    );
+  }
+
+  // Dashboard View
+  if (showDashboard && currentStep === 1) {
+    return (
+      <div className="min-h-screen bg-background-dark flex pb-16 lg:pb-0">
+        <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
+          <div className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+                <span className="material-symbols-outlined text-primary text-xl">description</span>
+              </div>
+              <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
+            </div>
+          </div>
+          <nav className="flex-1 px-4 space-y-1">
+            {[
+              { label: 'Dashboard', icon: 'dashboard', view: 'dashboard' as ViewType },
+              { label: 'Cotizaciones', icon: 'description', view: 'quote' as ViewType },
+              { label: 'Clientes', icon: 'group', view: 'dashboard' as ViewType },
+              { label: 'Ajustes', icon: 'settings', view: 'dashboard' as ViewType },
+            ].map((item) => (
+              <button key={item.label} onClick={() => handleNavigate(item.view)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+                <span className="material-symbols-outlined">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="p-4">
+            <button onClick={() => handleNavigate('info')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+              <span className="material-symbols-outlined">info</span>
+              <span className="font-medium">Info</span>
+            </button>
+          </div>
+          <div className="p-4 mx-4 mb-4">
             <div className="bg-gradient-to-br from-primary to-accent p-4 rounded-2xl text-white">
               <div className="flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined">diamond</span>
@@ -117,12 +222,31 @@ export const AppLayout: React.FC = () => {
             <Dashboard onNewQuote={() => setShowDashboard(false)} />
           </main>
         </div>
+
+        {/* Mobile Bottom Tab Bar */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 flex border-t border-white/5 bg-slate-900/95 backdrop-blur-md px-1 py-1 z-50">
+          {[
+            { icon: 'home', label: 'Inicio', view: 'dashboard' as ViewType, active: true },
+            { icon: 'add_circle', label: 'Nueva', view: 'quote' as ViewType },
+            { icon: 'group', label: 'Clientes' },
+            { icon: 'info', label: 'Info', view: 'info' as ViewType }
+          ].map((item) => (
+            <button 
+              key={item.label} 
+              onClick={() => item.view && handleNavigate(item.view)}
+              className={`flex-1 flex flex-col items-center gap-0.5 py-2 ${(item as { active?: boolean }).active ? 'text-primary' : 'text-slate-500'}`}
+            >
+              <span className="material-symbols-outlined text-xl">{item.icon}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background-dark flex">
+    <div className="min-h-screen bg-background-dark flex pb-16 lg:pb-0">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
         <div className="p-6">
@@ -135,25 +259,29 @@ export const AppLayout: React.FC = () => {
         </div>
         
         <nav className="flex-1 px-4 space-y-1">
-          <button onClick={() => setShowDashboard(true)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+          <button onClick={() => handleNavigate('dashboard')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
             <span className="material-symbols-outlined">dashboard</span>
             <span className="font-medium">Dashboard</span>
           </button>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+          <button onClick={() => handleNavigate('quote')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
             <span className="material-symbols-outlined">description</span>
             <span className="font-medium">Cotizaciones</span>
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+          </button>
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
             <span className="material-symbols-outlined">group</span>
             <span className="font-medium">Clientes</span>
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+          </button>
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
             <span className="material-symbols-outlined">settings</span>
             <span className="font-medium">Ajustes</span>
-          </a>
+          </button>
+          <button onClick={() => handleNavigate('info')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-slate-400 hover:text-slate-200 hover:bg-white/5">
+            <span className="material-symbols-outlined">info</span>
+            <span className="font-medium">Info</span>
+          </button>
         </nav>
 
-        <div className="p-4">
+        <div className="p-4 mx-4 mb-4">
           <div className="bg-gradient-to-br from-primary to-accent p-4 rounded-2xl text-white">
             <div className="flex items-center gap-2 mb-2">
               <span className="material-symbols-outlined">diamond</span>
@@ -267,14 +395,18 @@ export const AppLayout: React.FC = () => {
           </footer>
 
           {/* Mobile Bottom Tab Bar */}
-          <nav className="lg:hidden flex border-t border-white/5 bg-slate-900/80 backdrop-blur-md px-1 py-1">
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 flex border-t border-white/5 bg-slate-900/95 backdrop-blur-md px-1 py-1 z-50">
             {[
-              { icon: 'home', label: 'Inicio', action: () => { setShowDashboard(true); } },
-              { icon: 'add_circle', label: 'Nueva', active: true },
+              { icon: 'home', label: 'Inicio', view: 'dashboard' as ViewType },
+              { icon: 'add_circle', label: 'Nueva', view: 'quote' as ViewType },
               { icon: 'group', label: 'Clientes' },
-              { icon: 'settings', label: 'Ajustes' }
+              { icon: 'info', label: 'Info', view: 'info' as ViewType }
             ].map((item) => (
-              <button key={item.label} onClick={item.action} className={`flex-1 flex flex-col items-center gap-0.5 py-2 ${item.active ? 'text-primary' : 'text-slate-500'}`}>
+              <button 
+                key={item.label} 
+                onClick={() => item.view && handleNavigate(item.view)}
+                className={`flex-1 flex flex-col items-center gap-0.5 py-2 ${currentView === item.view ? 'text-primary' : 'text-slate-500'}`}
+              >
                 <span className="material-symbols-outlined text-xl">{item.icon}</span>
                 <span className="text-[10px] font-medium">{item.label}</span>
               </button>
