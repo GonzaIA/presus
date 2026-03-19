@@ -1,4 +1,5 @@
 import React from 'react';
+import Logo from '../../assets/logo-presspuesto.svg';
 
 interface HomeScreenProps {
   onNewQuote: () => void;
@@ -17,7 +18,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNewQuote, onViewClient
         <div className="relative z-10 p-8 text-center">
           {/* Logo */}
           <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <span className="material-symbols-outlined text-white text-4xl">description</span>
+            <img src={Logo} alt="Presspuesto Logo" className="w-full h-full object-contain p-2" />
           </div>
           
           <h1 className="text-2xl font-bold text-white mb-3 font-display">Presspuesto</h1>

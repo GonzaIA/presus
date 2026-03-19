@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
+import Logo from '../../assets/logo-presspuesto.svg';
 
 export const SplashScreen: React.FC = () => {
   const { goToStep } = useQuoteStore();
@@ -21,6 +22,10 @@ export const SplashScreen: React.FC = () => {
           0%, 100% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.3); }
           50% { box-shadow: 0 0 80px rgba(59, 130, 246, 0.6); }
         }
+        @keyframes glow {
+          0%, 100% { filter: drop-shadow(0 0 20px rgba(6, 177, 211, 0.4)); }
+          50% { filter: drop-shadow(0 0 40px rgba(59, 130, 246, 0.7)); }
+        }
         @keyframes slide-up {
           from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
@@ -35,6 +40,7 @@ export const SplashScreen: React.FC = () => {
         }
         .animate-float { animation: float 6s ease-in-out infinite; }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        .animate-glow { animation: glow 3s ease-in-out infinite; }
         .animate-slide-up { animation: slide-up 0.6s ease-out forwards; }
         .animate-gradient-shift {
           background-size: 200% 200%;
@@ -58,24 +64,16 @@ export const SplashScreen: React.FC = () => {
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-center px-6 pt-12">
-          <div className={`flex items-center gap-3 opacity-0 ${isLoaded ? 'animate-slide-up' : ''}`}>
-            <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center border border-primary/30">
-              <span className="material-symbols-outlined text-primary text-2xl">description</span>
-            </div>
-            <span className="text-2xl font-bold text-slate-100 font-display">Presspuesto</span>
-          </div>
-        </header>
-
         {/* Hero */}
         <main className="flex-1 flex flex-col items-center justify-center px-6 py-8">
           <div className="w-full max-w-md space-y-10">
             {/* Main Icon */}
             <div className={`text-center opacity-0 ${isLoaded ? 'animate-slide-up' : ''}`}>
-              <div className="w-32 h-32 mx-auto bg-gradient-to-br from-primary to-accent rounded-3xl flex items-center justify-center shadow-2xl shadow-primary/30 animate-pulse-glow animate-float">
-                <span className="material-symbols-outlined text-7xl text-white">description</span>
-              </div>
+              <img 
+                src={Logo} 
+                alt="Presspuesto Logo" 
+                className="w-[230px] h-[230px] mx-auto object-contain animate-float animate-glow" 
+              />
             </div>
 
             {/* Title & Description */}

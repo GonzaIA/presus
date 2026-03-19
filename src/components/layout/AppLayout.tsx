@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
+import Logo from '../../assets/logo-presspuesto.svg';
 import { StepProfessional } from '../steps/StepProfessional';
 import { StepClient } from '../steps/StepClient';
 import { StepItems } from '../steps/StepItems';
@@ -94,10 +95,7 @@ export const AppLayout: React.FC = () => {
         <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
           <div className="p-6">
             <button onClick={() => handleNavigate('dashboard')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-                <span className="material-symbols-outlined text-primary text-xl">description</span>
-              </div>
-              <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
+              <img src={Logo} alt="Presspuesto Logo" className="w-10 h-10" />
             </button>
           </div>
           <nav className="flex-1 px-4 space-y-1">
@@ -160,10 +158,7 @@ export const AppLayout: React.FC = () => {
         <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
           <div className="p-6">
             <button onClick={() => handleNavigate('dashboard')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-                <span className="material-symbols-outlined text-primary text-xl">description</span>
-              </div>
-              <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
+              <img src={Logo} alt="Presspuesto Logo" className="w-10 h-10" />
             </button>
           </div>
         <nav className="flex-1 px-4 space-y-1">
@@ -220,10 +215,7 @@ export const AppLayout: React.FC = () => {
       <aside className="hidden lg:flex lg:w-64 flex-col bg-slate-900/80 backdrop-blur-lg border-r border-white/5">
         <div className="p-6">
           <button onClick={() => handleNavigate('dashboard')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-              <span className="material-symbols-outlined text-primary text-xl">description</span>
-            </div>
-            <span className="text-xl font-bold text-slate-100 font-display">Presspuesto</span>
+            <img src={Logo} alt="Presspuesto Logo" className="w-10 h-10" />
           </button>
         </div>
         

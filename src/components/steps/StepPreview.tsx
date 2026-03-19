@@ -218,12 +218,19 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15mm' }}>
             <div>
-              {profesional.logo ? (
-                <img src={profesional.logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', marginBottom: '5px' }} />
-              ) : (
-                <div style={{ width: '40px', height: '40px', backgroundColor: '#2563eb', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
-                  <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '20px' }}>bolt</span>
-                </div>
+              {profesional.logo && (
+                <img 
+                  src={profesional.logo} 
+                  alt="Logo" 
+                  style={{ 
+                    maxWidth: '52px', 
+                    maxHeight: '52px', 
+                    width: 'auto', 
+                    height: 'auto', 
+                    objectFit: 'contain', 
+                    marginBottom: '5px' 
+                  }} 
+                />
               )}
               <p style={{ fontWeight: 'bold', fontSize: '12pt', color: '#1e293b' }}>{profesional.nombre || 'Tu Nombre'}</p>
               <p style={{ fontSize: '9pt', color: '#64748b' }}>{profesional.profesion}</p>
@@ -312,6 +319,19 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
           {/* Professional Footer */}
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '8mm', textAlign: 'center' }}>
             {profesional.matricula && <p style={{ fontSize: '8pt', color: '#94a3b8' }}>Matrícula: {profesional.matricula}</p>}
+          </div>
+
+          {/* Branding Footer */}
+          <div style={{ textAlign: 'center', marginTop: '12mm', paddingTop: '6mm', borderTop: '1px dashed #cbd5e1' }}>
+            <p style={{ fontSize: '8pt', color: '#94a3b8', marginBottom: '2px' }}>Este presupuesto fue creado gratuitamente en</p>
+            <a 
+              href="https://presspuesto.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ fontSize: '9pt', color: '#2563eb', fontWeight: '600', textDecoration: 'none' }}
+            >
+              presspuesto.com
+            </a>
           </div>
         </div>
       </div>
