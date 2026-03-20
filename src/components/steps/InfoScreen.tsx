@@ -92,7 +92,7 @@ export const InfoScreen: React.FC = () => {
         {/* CTA Section */}
         <div className="bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 backdrop-blur-xl rounded-3xl p-6 border border-primary/20 mb-8 animate-slide-up opacity-0 delay-200">
           <div className="text-center">
-            <span className="inline-block px-4 py-1.5 bg-primary/20 rounded-full text-primary text-xs font-semibold mb-3">
+            <span className="inline-block px-4 py-1.5 bg-primary/20 rounded-full text-white text-xs font-semibold mb-3">
               ¡Nuevo!
             </span>
             <h3 className="text-lg font-bold text-white mb-2">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useQuoteStore } from '../../store/useQuoteStore';
-import Logo from '../../assets/logo-presspuesto.svg';
+import Logo from '../../assets/logo-presspuesto_2.svg';
 
 export const SplashScreen: React.FC = () => {
   const { goToStep } = useQuoteStore();
@@ -72,7 +72,7 @@ export const SplashScreen: React.FC = () => {
               <img 
                 src={Logo} 
                 alt="Presspuesto Logo" 
-                className="w-[230px] h-[230px] mx-auto object-contain animate-float animate-glow" 
+                className="w-[300px] h-[300px] mx-auto object-contain animate-float animate-glow" 
               />
             </div>
 

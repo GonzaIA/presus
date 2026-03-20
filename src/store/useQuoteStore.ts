@@ -36,6 +36,7 @@ const initialState: Omit<QuoteState, 'currentStep'> = {
     validez: 7,
     condiciones: defaultConditions,
     condicionesCustom: '',
+    fecha: new Date().toISOString().split('T')[0],
   },
   quotes: [],
 };

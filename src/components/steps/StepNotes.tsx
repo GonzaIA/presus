@@ -16,6 +16,16 @@ export const StepNotes: React.FC = () => {
   return (
     <div className="space-y-4">
       <Card>
+        <h3 className="font-semibold text-slate-100 mb-3 text-sm">Fecha del Presupuesto</h3>
+        <input 
+          type="date" 
+          value={config.fecha || new Date().toISOString().split('T')[0]} 
+          onChange={e => setConfig({ fecha: e.target.value })} 
+          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200"
+        />
+      </Card>
+
+      <Card>
         <h3 className="font-semibold text-slate-100 mb-3 text-sm">Condiciones</h3>
         <div className="space-y-2">
           {config.condiciones.map(clause => (

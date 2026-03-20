@@ -37,6 +37,7 @@ export interface Config {
   validez: number;
   condiciones: Condition[];
   condicionesCustom: string;
+  fecha: string;
 }
 
 export interface Quote {

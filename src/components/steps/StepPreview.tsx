@@ -240,6 +240,7 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
             <div style={{ textAlign: 'right' }}>
               <span style={{ display: 'inline-block', padding: '3px 8px', backgroundColor: '#1e293b', color: 'white', fontSize: '8pt', fontWeight: 'bold', borderRadius: '4px' }}>PRESUPUESTO</span>
               <p style={{ fontSize: '8pt', color: '#94a3b8', marginTop: '5px' }}>SQ-{Date.now().toString().slice(-6)}</p>
+              <p style={{ fontSize: '8pt', color: '#64748b', marginTop: '3px' }}>Fecha: {config.fecha ? new Date(config.fecha).toLocaleDateString('es-AR') : new Date().toLocaleDateString('es-AR')}</p>
             </div>
           </div>
 
@@ -325,12 +326,12 @@ ${profesional.matricula ? `📋 Mat: ${profesional.matricula}` : ''}`;
           <div style={{ textAlign: 'center', marginTop: '12mm', paddingTop: '6mm', borderTop: '1px dashed #cbd5e1' }}>
             <p style={{ fontSize: '8pt', color: '#94a3b8', marginBottom: '2px' }}>Este presupuesto fue creado gratuitamente en</p>
             <a 
-              href="https://presspuesto.com" 
+              href="https://presspuesto.online" 
               target="_blank" 
               rel="noopener noreferrer"
               style={{ fontSize: '9pt', color: '#2563eb', fontWeight: '600', textDecoration: 'none' }}
             >
-              presspuesto.com
+              presspuesto.online
             </a>
           </div>
         </div>

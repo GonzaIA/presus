@@ -3,6 +3,7 @@ import { useQuoteStore } from '../../store/useQuoteStore';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import type { Quote } from '../../types';
+import Logo from '../../assets/logo-presspuesto_2.svg';
 
 type StatusFilter = 'all' | Quote['status'];
 type QuoteStatus = Quote['status'];
@@ -89,6 +90,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewQuote, onLoadQuote })
 
   return (
     <div className="space-y-6">
+      <div className="lg:hidden flex justify-center py-4">
+        <img src={Logo} alt="Presspuesto Logo" className="w-32" />
+      </div>
+
       <style>{`
         @keyframes slide-up {
           from { opacity: 0; transform: translateY(20px); }

@@ -1,5 +1,5 @@
 import React from 'react';
-import Logo from '../../assets/logo-presspuesto.svg';
+import Logo from '../../assets/logo-presspuesto_2.svg';
 
 interface HomeScreenProps {
   onNewQuote: () => void;
